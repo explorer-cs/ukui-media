@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-
+extern "C" {
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
@@ -31,6 +31,7 @@
 #include <libmatemixer/matemixer.h>
 
 #include "gvc-applet.h"
+}
 
 static gboolean show_version = FALSE;
 static gboolean debug = FALSE;
