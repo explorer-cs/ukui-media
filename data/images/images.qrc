@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>audio-volume-muted.svg</file>
+        <file>audio-volume-medium.svg</file>
+        <file>audio-volume-low.svg</file>
+        <file>audio-volume-high.svg</file>
+        <file>application-audio.svg</file>
+    </qresource>
+</RCC>
