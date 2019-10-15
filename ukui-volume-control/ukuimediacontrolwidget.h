@@ -37,6 +37,7 @@ public:
     static void onControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkuiMediaControlWidget *p);
     int getVolume();
     void setVolume(int volume);
+    friend class UkuiSystemTryWidget ;
 private:
     //QPushButton *muteButton;
     QLabel *m_displayVolumeValue;

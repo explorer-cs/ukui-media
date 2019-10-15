@@ -31,6 +31,10 @@ UkuiSystemTryWidget::UkuiSystemTryWidget(QWidget *parent)
     systemTray->setIcon(QIcon("/usr/share/icons/ukui-icon-theme/16x16/panel/audio-volume-medium-panel.png"));
     systemTray->setToolTip("声音设置");
     systemTray->setVisible(TRUE);
+    //在构造中设置窗体的MouseTracking属性
+    vWidget = new UkuiMediaControlWidget(this);
+    this->setMouseTracking(true);
+    vWidget->setMouseTracking(true);
     //为系统托盘图标添加右击菜单
     actionMute = new QAction(this);
     actionMute->setCheckable(true);
@@ -45,20 +49,18 @@ UkuiSystemTryWidget::UkuiSystemTryWidget(QWidget *parent)
     menu->addAction(actionSoundPreference);
     systemTray->setContextMenu(menu);
 
-    //在构造中设置窗体的MouseTracking属性
-    vWidget = new UkuiMediaControlWidget(this);
-    this->setMouseTracking(true);
-    vWidget->setMouseTracking(true);
     //点击托盘栏声音图标显示音量条
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(activatedSysTrayIcon(QSystemTrayIcon::ActivationReason)));
     //设置获取焦点事件
     setFocusPolicy(Qt::ClickFocus);
     //设置静音功能
     connect(actionMute,&QAction::triggered,vWidget,[=] {
-        hide_window();
+        hideWindow();
         vWidget->mute();
     });
 
+    //更改系统托盘图标
+    connect(vWidget->m_volumeSlider,SIGNAL(valueChanged(int)),this,SLOT(changSystemTrayIcon(int)));
     //连接声音首选项
     connect(actionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
     //设置中心窗口
@@ -79,8 +81,9 @@ void UkuiSystemTryWidget::activatedSysTrayIcon(QSystemTrayIcon::ActivationReason
             local_height = QApplication::desktop()->availableGeometry().height() - this->height();
 
             if (voiceOnOrOff) {
-                show_window();
-                if(rect.x()< 1440  && rect.y() > 870) {
+                showWindow();
+
+                if (rect.x()< 1440  && rect.y() > 870) {
                     this->setGeometry(rect.x()+11-80,local_height,160,40);//底部
                 }
                 else if (rect.x() < 1440 && rect.y() < 40 ) {
@@ -95,7 +98,7 @@ void UkuiSystemTryWidget::activatedSysTrayIcon(QSystemTrayIcon::ActivationReason
                 break;
             }
             else {
-                hide_window();
+                hideWindow();
                 break;
             }
     }
@@ -103,26 +106,26 @@ void UkuiSystemTryWidget::activatedSysTrayIcon(QSystemTrayIcon::ActivationReason
 
 void UkuiSystemTryWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-    hide_window();
+    hideWindow();
 }
 
-void UkuiSystemTryWidget::show_window()
+void UkuiSystemTryWidget::showWindow()
 {
     this->show();
     vWidget->show();
     voiceOnOrOff = 0;
 }
 
-void UkuiSystemTryWidget::hide_window()
+void UkuiSystemTryWidget::hideWindow()
 {
     vWidget->hide();
     this->hide();
     voiceOnOrOff = 1;
 }
 
-void UkuiSystemTryWidget::show_contexmenu(const QPoint&)
+void UkuiSystemTryWidget::showContexmenu(const QPoint&)
 {
-    hide_window();
+    hideWindow();
 }
 
 void UkuiSystemTryWidget::mousePressEvent(QMouseEvent *event)
@@ -130,11 +133,11 @@ void UkuiSystemTryWidget::mousePressEvent(QMouseEvent *event)
 
     if(event->button()==Qt::LeftButton)
     {
-        hide_window();
+        hideWindow();
     }
     else if(event->button()==Qt::RightButton)
     {
-        //hide_window();
+
     }
     else if(event->button()==Qt::MidButton)
     {
@@ -147,7 +150,7 @@ bool UkuiSystemTryWidget::event(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if(QApplication::activeWindow() != this)
         {
-            hide_window();
+            hideWindow();
         }
     }
 
@@ -175,6 +178,39 @@ void UkuiSystemTryWidget::jumpControlPanel()
     QProcess *m_process = new QProcess;
     m_process->start("ukui-volume-control");
 
+}
+
+void UkuiSystemTryWidget::setSystemTrayIninIcon(int volume)
+{
+    volume = volume*100/65536.0 + 0.5;
+    if(volume <= 0) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-muted.png"));
+    }
+    else if (volume > 0 && volume <= 33) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-low.png"));
+    }
+    else if (volume >33 && volume <= 66) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-medium.png"));
+    }
+    else {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-high.png"));
+    }
+}
+
+void UkuiSystemTryWidget::changSystemTrayIcon(int volume)
+{
+    if(volume <= 0) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-muted.png"));
+    }
+    else if (volume > 0 && volume <= 33) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-low.png"));
+    }
+    else if (volume >33 && volume <= 66) {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-medium.png"));
+    }
+    else {
+        systemTray->setIcon(QIcon(":/icon/audio-volume-high.png"));
+    }
 }
 
 UkuiSystemTryWidget::~UkuiSystemTryWidget()

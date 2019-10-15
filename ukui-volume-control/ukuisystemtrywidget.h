@@ -19,16 +19,18 @@ public:
     UkuiSystemTryWidget(QWidget *parent = 0);
     ~UkuiSystemTryWidget();
     void contextMenuEvent(QContextMenuEvent *event);
-    void show_window();
-    void hide_window();
+    void showWindow();
+    void hideWindow();
+    void setSystemTrayIninIcon(int volume);
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint&);
 
 public Q_SLOTS:
-    void show_contexmenu(const QPoint&);
+    void showContexmenu(const QPoint&);
     void activatedSysTrayIcon(QSystemTrayIcon::ActivationReason);
     void jumpControlPanel();
+    void changSystemTrayIcon(int volume);
 private:
     QPushButton *btnVoice;
     QAction *actionMute;

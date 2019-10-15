@@ -51,7 +51,6 @@ UkuiMediaControlWidget::UkuiMediaControlWidget(QWidget *parent) : QWidget (paren
     voiceState = mate_mixer_stream_control_get_mute(ukuiControl);//获取声音的状态
 
     //获取上一次退出状态的值
-
     m_displayVolumeValue = new QLabel;
     m_volumeSlider = new QSlider;
 
