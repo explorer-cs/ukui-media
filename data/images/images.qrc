@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>blank.png</file>
+        <file>emblem-unreadable.png</file>
+        <file>audio-volume-muted.png</file>
+        <file>audio-volume-medium.png</file>
+        <file>audio-volume-low.png</file>
+        <file>audio-volume-high.png</file>
+        <file>application-audio.png</file>
+    </qresource>
+</RCC>
