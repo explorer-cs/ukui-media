@@ -37,15 +37,17 @@ PKGCONFIG += gtk+-3.0	\
 # Input
 
 HEADERS += \
-    ukmedia_control_widget.h \
     ukmedia_application.h \
+    ukmedia_control_widget.h \
     ukmedia_systemtray_widget.h
 
 
+
 SOURCES += \
-    ukmedia_systemtray_widget.cpp \
-    ukmedia_control_widget.cpp \
     ukmedia_application.cpp \
+    ukmedia_control_widget.cpp \
+    ukmedia_systemtray_widget.cpp
+
     main.cpp
 
 
