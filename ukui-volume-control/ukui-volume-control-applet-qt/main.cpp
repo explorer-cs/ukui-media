@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QMouseEvent>
-#include "ukuiapplication.h"
+#include "ukmedia_application.h"
 #include <QDebug>
 #include <glib.h>
 #include <glib/gi18n.h>

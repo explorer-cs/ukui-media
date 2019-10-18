@@ -46,8 +46,7 @@ HEADERS += \
 SOURCES += \
     ukmedia_application.cpp \
     ukmedia_control_widget.cpp \
-    ukmedia_systemtray_widget.cpp
-
+    ukmedia_systemtray_widget.cpp\
     main.cpp
 
 
