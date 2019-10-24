@@ -25,9 +25,8 @@ class UkmediaSlider : public QSlider
 {
 
 public:
-    UkmediaSlider(QWidget *parent = 0) : QSlider(parent)
-    {
-    }
+    UkmediaSlider(QWidget *parent = nullptr);
+    ~UkmediaSlider();
 
 protected:
     void mousePressEvent(QMouseEvent *ev)
@@ -41,7 +40,6 @@ protected:
         QEvent evEvent(static_cast<QEvent::Type>(QEvent::User + 1));
         QCoreApplication::sendEvent(parentWidget(), &evEvent);
     }
-
 };
 
 class UkmediaControlWidget : public QWidget
@@ -51,33 +49,61 @@ class UkmediaControlWidget : public QWidget
 public:
     UkmediaControlWidget(QWidget *parent = nullptr);
     ~UkmediaControlWidget();
-    void dockWidgetInit();
-    void mute();
+    void opDockWidgetInit();
+    void ipDockWidgetInit();
+    void opMute();
+    void ipMute();
     void setFocus();
     void scrollUp();
     void scrollDown();
-    static void onControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
-    int getVolume();
-    void setVolume(int volume);
-    bool getMuteStatus();
+    static void outputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
+    static void inputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
+
+    int getIpVolume();
+    void setIpVolume(int volume);
+    bool getIpMuteStatus();
+
+    int getOpVolume();
+    void setOpVolume(int volume);
+    bool getOpMuteStatus();
+
+    void mateMixerInit();
+    //声音输出托盘栏设置
+    void ukmediaGetDefaultOutputStream();
+    void outputVolumeNotify();
+    void outputVolumeChanged();
+
+    //麦克风托盘栏设置
+    void ukmediaGetDefaultInputStream();
+    void inputVolumeNotify();
+    void inputVolumeChanged();
+
     friend class UkmediaSystemTrayWidget ;
+    friend class UkmediaSystemTrayIcon;
 private:
-    QLabel *m_muteIconLabel;
-    QLabel *m_displayVolumeValue;
-    UkmediaSlider *m_volumeSlider;
+    QLabel *m_opMuteIconLabel;
+    QLabel *m_opDisplayVolumeValue;
+    UkmediaSlider *m_opVolumeSlider;
+    QLabel *m_ipMuteIconLabel;
+    QLabel *m_ipDisplayVolumeValue;
+    UkmediaSlider *m_ipVolumeSlider;
     MateMixerContext *ukuiContext;
-    MateMixerStreamControl *ukuiControl;
+    MateMixerStreamControl *outputControl;
+    MateMixerStreamControl *inputControl;
+    MateMixerStream *outputStream;
+    MateMixerStream *inputStream;
 
 Q_SIGNALS:
     void valueChangedSignal(int);
     void emitVolume(int);
 
 public Q_SLOTS:
-    void acceptVolume(int);
-    void onVolumeSliderChanged(int volume);
+    void acceptOpVolume(int);
+    void acceptIpVolume(int);
+    void outputVolumeSliderChanged(int volume);
+    void inputVolumeSliderChanged(int volume);
 
 protected:
-    virtual void QWhellEvent(QWheelEvent *event);
     bool event(QEvent *event);//重写窗口事件
 };
 

@@ -7,7 +7,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TEMPLATE = app
-TARGET = ukui-media-volume-control-applet
+TARGET = ukui-media-volume-control-applet-qt
 INCLUDEPATH += .
 
 # The following define makes your compiler warn you if you use any
@@ -49,6 +49,9 @@ SOURCES += \
     ukmedia_systemtray_widget.cpp\
     main.cpp
 
-
 RESOURCES += \
     ../../data/images/images.qrc
+
+
+TRANSLATIONS += \
+    ../../po/zh_CN.ts

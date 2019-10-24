@@ -7,6 +7,7 @@ UkuiApplication::UkuiApplication(int &argc,char **argv):
 {
     widget = new UkmediaSystemTrayWidget;
     GsetWindowInstance(widget);
+    widget->hide();
 }
 
 UkuiApplication::~UkuiApplication()
@@ -16,21 +17,18 @@ UkuiApplication::~UkuiApplication()
 
 void UkuiApplication::GsetWindowInstance(UkmediaSystemTrayWidget *wnd)
 {
-    widget = wnd;
+    Q_UNUSED(wnd);
+    //widget = wnd;
 }
 
 bool UkuiApplication::notify(QObject *obj, QEvent *e)
 {
-    //qDebug() << activeWindow();
     QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
    if (e->type() == QEvent::MouseButtonPress) {
 
-        if (mouseEvent->buttons() == Qt::RightButton && !widget->isHidden()){
+        if (mouseEvent->buttons() == Qt::RightButton && !widget->isHidden()) {
             widget->hide();
         }
-//        else if (mouseEvent->buttons() == Qt::MidButton && !widget->isHidden()) {
-//            widget->hide();
-//        }
     }
 
     return QApplication::notify(obj,e);

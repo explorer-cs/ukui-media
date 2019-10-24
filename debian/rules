@@ -3,7 +3,7 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
-QT_INSTALL_DIR := $(shell pwd)/debian/tmp/usr/bin
+QT_INSTALL_DIR := $(shell pwd)/debian/tmp/
 %:
 	dh $@
 	mkdir -p ukui-volume-control/ukui-volume-control-applet-qt/build/

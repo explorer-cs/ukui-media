@@ -13,17 +13,20 @@
 #include <QLineEdit>
 #include <QMenu>
 
+#define TRANSLATIONS_DIR "/home/fzx/f/ukui-media-git/ukui-media/ukui-media/po"
+
 class UkmediaSystemTrayIcon : public QSystemTrayIcon
 {
     Q_OBJECT
 public:
-    UkmediaSystemTrayIcon(QWidget *parent = 0);
+    UkmediaSystemTrayIcon(QWidget *parent = nullptr);
     ~UkmediaSystemTrayIcon();
-private:
-    //UkuiSystemTrayWidget *uw;
+
+Q_SIGNALS:
+    void wheelRollEventSignal(bool);
+
 protected:
     bool event(QEvent *e) ;
-//    void mousePressEvent(QMouseEvent *event);
 };
 
 class UkmediaSystemTrayWidget : public QMainWindow
@@ -31,39 +34,49 @@ class UkmediaSystemTrayWidget : public QMainWindow
     Q_OBJECT
 public:
      bool voiceOnOrOff = 1;
-    UkmediaSystemTrayWidget(QWidget *parent = 0);
+    UkmediaSystemTrayWidget(QWidget *parent = nullptr);
     ~UkmediaSystemTrayWidget();
-    void contextMenuEvent(QContextMenuEvent *event);
     void showWindow();
     void hideWindow();
-    void setSystemTrayInitIcon(int volume,bool status);
+    void outputSystemTrayIconInit(int volume,bool status);
+    void inputSystemTrayIconInit(int volume,bool status);
+    void outputSystemTrayMenuInit();
+    void inputSystemTrayMenuInit();
     friend class UkmediaSystemTrayIcon;
+
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint&);
 
 public Q_SLOTS:
-    //void showContexmenu(const QPoint&);
-    void activatedSysTrayIcon(QSystemTrayIcon::ActivationReason);
+    void activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
+    void activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
     void jumpControlPanel();
-    void changSystemTrayIcon(int volume);
-    void onActionMuteTriggered(bool);
+    void changeOpSystemTrayIcon(int volume);
+    void changeIpSystemTrayIcon(int volume);
+    void outputActionMuteTriggered(bool);
+    void inputActionMuteTriggered(bool);
+    void acceptOpWheelRollEvent(bool);
+    void acceptIpWheelRollEvent(bool);
 private:
     QPushButton *btnVoice;
+    QAction *inputActionMute;
+    QAction *inputActionSoundPreference;
     QAction *outputActionMute;
     QAction *outputActionSoundPreference;
-    QSystemTrayIcon *systemTrayOutput;
-    //UkuiSystemTrayIcon *systemTray;
+    UkmediaSystemTrayIcon *inputSystemTray;
+    UkmediaSystemTrayIcon *outputSystemTray;
     UkmediaControlWidget *outputWidget;
+    UkmediaControlWidget *inputWidget;
     QMenu *outputMenu ;
+    QMenu *inputMenu;
 
 protected:
     //将窗口设置为随着窗口变化而变化
     bool event(QEvent *event);//重写窗口事件
     void mousePressEvent(QMouseEvent *event);
-    void QWhellEvent(QWheelEvent *event);
-    virtual void focusInEvent(QFocusEvent *e);
-    virtual void focusOutEvent(QFocusEvent *e);
-    bool eventFilter(QObject *obj,QEvent *e);
+    virtual void wheelEvent(QWheelEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // UKMEDIA_SYSTEMTRAY_WIDGET_H
