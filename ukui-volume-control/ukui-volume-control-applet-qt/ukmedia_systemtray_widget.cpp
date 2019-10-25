@@ -44,7 +44,6 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
 
     inputSystemTrayMenuInit();
     outputSystemTrayMenuInit();
-
     inputWidget->ipDockWidgetInit();
     inputWidget->ukmediaGetDefaultInputStream();
     ipVolume = inputWidget->getIpVolume();
@@ -83,8 +82,11 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     connect(inputActionMute,SIGNAL(triggered(bool)),this,SLOT(inputActionMuteTriggered(bool)));
     connect(inputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,SLOT(acceptIpWheelRollEvent(bool)));
     //更改系统托盘图标
-    connect(outputWidget->m_opVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(changeOpSystemTrayIcon(int)));
-    connect(inputWidget->m_ipVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(changeIpSystemTrayIcon(int)));
+    connect(outputWidget->m_opVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(slidChangeOpSystemTrayIcon(int)));
+    connect(inputWidget->m_ipVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(slidChangeIpSystemTrayIcon(int)));
+
+    connect(outputWidget->m_opMuteButton,SIGNAL(clicked()),this,SLOT(buttonChangeOpSystemTrayIcon()));
+    connect(inputWidget->m_ipMuteButton,SIGNAL(clicked()),this,SLOT(buttonChangeIpSystemTrayIcon()));
     //连接声音首选项
     connect(outputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
     connect(inputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
@@ -104,7 +106,6 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
     inputActionMute->setText(tr("Mute(M)"));
 
     inputSystemTray->setToolTip((tr("Input volume control")));
-
 
     inputActionSoundPreference = new QAction(this);
     inputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));
@@ -166,7 +167,7 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
     switch(reason)
     {
         case QSystemTrayIcon::MiddleClick: {
-            if (this->isHidden()) {
+            if (inputWidget->isHidden()) {
                 if (!outputActionMute->isChecked()) {
                     outputActionMute->setChecked(true);
                 }
@@ -174,6 +175,15 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
                     outputActionMute->setChecked(false);
                 }
                 inputWidget->ipMute();
+                bool status = inputWidget->getIpMuteStatus();
+
+                if (status) {
+                    inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
+                }
+                else {
+                    int volume = inputWidget->m_ipVolumeSlider->value();
+                    updateIpSystemTrayIcon(volume);
+                }
             }
             else {
                 //hideWindow();
@@ -197,12 +207,11 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
                 }
                 else if (rect.x()>1570 && rect.y() < 870) {
                     inputWidget->setGeometry(local_width,rect.y()+11-15,1,41);
-
                 }
                 inputWidget->show();
                 break;
             }
-            else {
+            else {            
                 inputWidget->hide();
                 break;
             }
@@ -234,6 +243,7 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
     switch(reason)
     {
         case QSystemTrayIcon::MiddleClick: {
+
             if (this->isHidden()) {
                 if (!outputActionMute->isChecked()) {
                     outputActionMute->setChecked(true);
@@ -242,6 +252,16 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
                     outputActionMute->setChecked(false);
                 }
                 outputWidget->opMute();
+                bool status = outputWidget->getOpMuteStatus();
+
+                if (status) {
+                    outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
+                }
+                else {
+                    int volume = outputWidget->m_opVolumeSlider->value();
+                    updateOpSystemTrayIcon(volume);
+                }
+
             }
             else {
                 hideWindow();
@@ -267,13 +287,11 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
                     this->setGeometry(local_width,rect.y()+11-15,180,41);
 
                 }
-                this->show();
                 showWindow();
                 break;
             }
             else {
                 hideWindow();
-//                outputWidget->hide();
                 break;
             }
         }
@@ -333,17 +351,18 @@ bool UkmediaSystemTrayWidget::event(QEvent *event)
 
 bool UkmediaSystemTrayIcon::event(QEvent *event)
 {
-    bool value;
     QWheelEvent *e = static_cast<QWheelEvent *>(event);
     if (event->type() == QEvent::Wheel) {
+        bool value = false;
         if (e->delta() > 0) {
             value = true;
+            Q_EMIT  wheelRollEventSignal(value);
         }
         else if (e->delta() < 0) {
             value = false;
+            Q_EMIT  wheelRollEventSignal(value);
         }
     }
-    Q_EMIT  wheelRollEventSignal(value);
     return QSystemTrayIcon::event(e);
 
 }
@@ -352,9 +371,6 @@ void UkmediaSystemTrayWidget::wheelEvent(QWheelEvent *event)
 {
     int wheelStep = 65536/20;//滚动大小为5
 //    qDebug() << inputWidget->isHidden();
-    if (!inputWidget->isHidden()) {
-        qDebug() << "麦克风滚动事件";
-    }
 
     int volume = outputWidget->getOpVolume();
     if (event->delta() >0 ) {
@@ -384,8 +400,7 @@ void UkmediaSystemTrayWidget::jumpControlPanel()
 
 void UkmediaSystemTrayWidget::inputSystemTrayIconInit(int volume, bool status)
 {
-    volume = volume*100/65536.0 + 0.5;
-    qDebug() << volume << status;
+    volume = int(volume*100/65536.0 + 0.5);
     if (status) {
         inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
         if (!inputActionMute->isChecked()) {
@@ -431,7 +446,7 @@ void UkmediaSystemTrayWidget::outputSystemTrayIconInit(int volume,bool status)
     outputSystemTray->setVisible(TRUE);
 }
 
-void UkmediaSystemTrayWidget::changeIpSystemTrayIcon(int volume)
+void UkmediaSystemTrayWidget::slidChangeIpSystemTrayIcon(int volume)
 {
     if (volume <= 0) {
         inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
@@ -455,10 +470,25 @@ void UkmediaSystemTrayWidget::changeIpSystemTrayIcon(int volume)
 
 }
 
-void UkmediaSystemTrayWidget::changeOpSystemTrayIcon(int volume)
+void UkmediaSystemTrayWidget::updateIpSystemTrayIcon(int volume)
 {
     if (volume <= 0) {
-        //outputActionMute->setChecked(true);
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
+    }
+    else if (volume > 0 && volume <= 33) {
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-low.png"));
+    }
+    else if (volume >33 && volume <= 66) {
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-medium.png"));
+    }
+    else {
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-high.png"));
+    }
+}
+
+void UkmediaSystemTrayWidget::updateOpSystemTrayIcon(int volume)
+{
+    if (volume <= 0) {
         outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
     }
     else if (volume > 0 && volume <= 33) {
@@ -470,27 +500,84 @@ void UkmediaSystemTrayWidget::changeOpSystemTrayIcon(int volume)
     else {
         outputSystemTray->setIcon(QIcon(":/images/audio-volume-high.png"));
     }
+}
 
+void UkmediaSystemTrayWidget::slidChangeOpSystemTrayIcon(int volume)
+{
+    updateOpSystemTrayIcon(volume);
     if (mate_mixer_stream_control_get_mute(outputWidget->outputControl)) {
         outputActionMute->setChecked(true);
 
     }
     else {
         outputActionMute->setChecked(false);
+    }
+}
 
+void UkmediaSystemTrayWidget::buttonChangeIpSystemTrayIcon()
+{
+    if (!inputActionMute->isChecked()) {
+        inputActionMute->setChecked(true);
+    }
+    else {
+        inputActionMute->setChecked(false);
+    }
+    bool status = inputWidget->getIpMuteStatus();
+    if (status) {
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
+    }
+    else {
+
+        int volume = inputWidget->getIpVolume();
+        volume = volume * 100 / 65536.0 + 0.5;
+        updateIpSystemTrayIcon(volume);
+    }
+}
+
+void UkmediaSystemTrayWidget::buttonChangeOpSystemTrayIcon()
+{
+    if (!outputActionMute->isChecked()) {
+        outputActionMute->setChecked(true);
+    }
+    else {
+        outputActionMute->setChecked(false);
+    }
+    bool status = outputWidget->getOpMuteStatus();
+    if (status) {
+        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
+    }
+    else {
+
+        int volume = outputWidget->getOpVolume();
+        volume = volume * 100 / 65536.0 + 0.5;
+        updateOpSystemTrayIcon(volume);
     }
 }
 
 void UkmediaSystemTrayWidget::inputActionMuteTriggered(bool status)
 {
-    Q_UNUSED(status);
     inputWidget->ipMute();
+    status = inputWidget->getIpMuteStatus();
+    if (status) {
+        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
+    }
+    else {
+        int volume = inputWidget->getIpVolume();
+        updateIpSystemTrayIcon(volume);
+    }
 }
 
 void UkmediaSystemTrayWidget::outputActionMuteTriggered(bool status)
 {
-    Q_UNUSED(status);
     outputWidget->opMute();
+    status = outputWidget->getOpMuteStatus();
+    if (status) {
+        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
+    }
+    else {
+        int volume = outputWidget->getOpVolume();
+        updateOpSystemTrayIcon(volume);
+    }
 }
 
 void UkmediaSystemTrayWidget::keyPressEvent(QKeyEvent *event)

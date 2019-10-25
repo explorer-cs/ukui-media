@@ -5,13 +5,14 @@
 #include <QPushButton>
 #include <QAction>
 #include <QSystemTrayIcon>
-#include "ukmedia_control_widget.h"
+//#include "ukmedia_control_widget.h"
 #include <QSystemTrayIcon>
 #include <QMainWindow>
 #include <QRadioButton>
 #include <QWheelEvent>
 #include <QLineEdit>
 #include <QMenu>
+#include "ukmedia_ip_system_tray_widget.h"
 
 #define TRANSLATIONS_DIR "/home/fzx/f/ukui-media-git/ukui-media/ukui-media/po"
 
@@ -42,6 +43,8 @@ public:
     void inputSystemTrayIconInit(int volume,bool status);
     void outputSystemTrayMenuInit();
     void inputSystemTrayMenuInit();
+    void updateIpSystemTrayIcon(int volume);
+    void updateOpSystemTrayIcon(int volume);
     friend class UkmediaSystemTrayIcon;
 
 Q_SIGNALS:
@@ -51,21 +54,25 @@ public Q_SLOTS:
     void activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
     void activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
     void jumpControlPanel();
-    void changeOpSystemTrayIcon(int volume);
-    void changeIpSystemTrayIcon(int volume);
+    void slidChangeOpSystemTrayIcon(int volume);
+    void slidChangeIpSystemTrayIcon(int volume);
     void outputActionMuteTriggered(bool);
     void inputActionMuteTriggered(bool);
     void acceptOpWheelRollEvent(bool);
     void acceptIpWheelRollEvent(bool);
+
+    void buttonChangeOpSystemTrayIcon();
+    void buttonChangeIpSystemTrayIcon();
+
 private:
     QPushButton *btnVoice;
     QAction *inputActionMute;
     QAction *inputActionSoundPreference;
     QAction *outputActionMute;
     QAction *outputActionSoundPreference;
-    UkmediaSystemTrayIcon *inputSystemTray;
     UkmediaSystemTrayIcon *outputSystemTray;
     UkmediaControlWidget *outputWidget;
+    UkmediaSystemTrayIcon *inputSystemTray;
     UkmediaControlWidget *inputWidget;
     QMenu *outputMenu ;
     QMenu *inputMenu;

@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QWidget>
 #include <QWheelEvent>
+//#include "ukmedia_ip_system_tray_widget.h"
 extern "C" {
 #include <libmatemixer/matemixer.h>
 #include <gtk/gtk.h>
@@ -80,11 +81,12 @@ public:
 
     friend class UkmediaSystemTrayWidget ;
     friend class UkmediaSystemTrayIcon;
+    friend class UkmediaIpSystemTrayWidget;
 private:
-    QLabel *m_opMuteIconLabel;
+    QPushButton *m_opMuteButton;
+    QPushButton *m_ipMuteButton;
     QLabel *m_opDisplayVolumeValue;
     UkmediaSlider *m_opVolumeSlider;
-    QLabel *m_ipMuteIconLabel;
     QLabel *m_ipDisplayVolumeValue;
     UkmediaSlider *m_ipVolumeSlider;
     MateMixerContext *ukuiContext;
@@ -100,6 +102,8 @@ Q_SIGNALS:
 public Q_SLOTS:
     void acceptOpVolume(int);
     void acceptIpVolume(int);
+    void opMuteButtonClick();
+    void ipMuteButtonClick();
     void outputVolumeSliderChanged(int volume);
     void inputVolumeSliderChanged(int volume);
 
