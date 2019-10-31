@@ -19,6 +19,7 @@ extern "C" {
 
 gboolean isMute;
 gboolean ipIsMute;
+SystemTrayIconType trayIconType = SYSTEMTRAYICON_UNKNOW;
 
 UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
 {
@@ -96,33 +97,33 @@ void UkmediaControlWidget::muteWidget(int volume,bool status)
     QIcon icon;
     QIcon::setThemeName("ukui-icon-theme");
     switch (trayIconType) {
-        case SYSTEMTRAYICON_MICROPHONE: {
-            m_volumeSlider->setValue(volume);
-            m_displayVolumeValue->setNum(volume);
-            mate_mixer_stream_control_set_mute(inputControl,status);
-            muteButtonIcon = "audio-input-microphone-muted";
-            icon = QIcon::fromTheme(muteButtonIcon);
-            m_muteButton->setIcon(icon);
-            break;
-        }
-        case SYSTEMTRAYICON_VOLUME: {
-            m_volumeSlider->setValue(volume);
-            m_displayVolumeValue->setNum(volume);
-            mate_mixer_stream_control_set_mute(outputControl,status);
-            muteButtonIcon = "audio-volume-muted";
-            icon = QIcon::fromTheme(muteButtonIcon);
-            m_muteButton->setIcon(icon);
-            break;
-        }
-        default:
-            break;
+    case SYSTEMTRAYICON_MICROPHONE: {
+        m_volumeSlider->setValue(volume);
+        m_displayVolumeValue->setNum(volume);
+        mate_mixer_stream_control_set_mute(inputControl,status);
+        muteButtonIcon = "audio-input-microphone-muted";
+        icon = QIcon::fromTheme(muteButtonIcon);
+        m_muteButton->setIcon(icon);
+        break;
+    }
+    case SYSTEMTRAYICON_VOLUME: {
+        m_volumeSlider->setValue(volume);
+        m_displayVolumeValue->setNum(volume);
+        mate_mixer_stream_control_set_mute(outputControl,status);
+        muteButtonIcon = "audio-volume-muted";
+        icon = QIcon::fromTheme(muteButtonIcon);
+        m_muteButton->setIcon(icon);
+        break;
+    }
+    default:
+        break;
     }
 }
 
 /*
     获取默认输入流及设置图标
 */
-void UkmediaControlWidget::ukmediaGetDefaultInputStream()
+void UkmediaControlWidget::getDefaultInputStream()
 {
     int volumeRead;
     int voiceState;
@@ -174,7 +175,7 @@ void UkmediaControlWidget::inputVolumeChanged()
 /*
     获取默认输出流
 */
-void UkmediaControlWidget::ukmediaGetDefaultOutputStream()
+void UkmediaControlWidget::getDefaultOutputStream()
 {
     int volumeRead;
     int volume;
@@ -207,8 +208,6 @@ void UkmediaControlWidget::ukmediaGetDefaultOutputStream()
 */
 void UkmediaControlWidget::outputVolumeNotify()
 {
-    bool isMute = mate_mixer_stream_control_get_mute(outputControl);
-
     MateMixerStreamControlFlags control_flags = mate_mixer_stream_control_get_flags(outputControl);
     if (control_flags & MATE_MIXER_STREAM_CONTROL_VOLUME_WRITABLE)
         g_signal_connect(outputControl,"notify::volume",G_CALLBACK (outputControlVolumeNotify),this);
@@ -280,42 +279,41 @@ void UkmediaControlWidget:: mute()
     QIcon icon;
     QIcon::setThemeName("ukui-icon-theme");
     switch (trayIconType) {
-        case SYSTEMTRAYICON_MICROPHONE: {
-            ipIsMute = mate_mixer_stream_control_get_mute(inputControl);
-            int ipVolume = mate_mixer_stream_control_get_volume(inputControl);
-            ipVolume = ipVolume*100/65536.0 + 0.5;
-            if (ipIsMute) {
-                m_displayVolumeValue->setNum(ipVolume);
-                mate_mixer_stream_control_set_mute(inputControl,FALSE);
-                setIpMuteButtonIcon(ipVolume);
-            }
-            else {
-                mate_mixer_stream_control_set_mute(inputControl,TRUE);
-                muteButtonIcon = "audio-input-microphone-muted";
-                icon = QIcon::fromTheme(muteButtonIcon);
-                m_muteButton->setIcon(icon);
-            }
-            break;
+    case SYSTEMTRAYICON_MICROPHONE: {
+        ipIsMute = mate_mixer_stream_control_get_mute(inputControl);
+        int ipVolume = mate_mixer_stream_control_get_volume(inputControl);
+        ipVolume = ipVolume*100/65536.0 + 0.5;
+        if (ipIsMute) {
+            m_displayVolumeValue->setNum(ipVolume);
+            mate_mixer_stream_control_set_mute(inputControl,FALSE);
+            setIpMuteButtonIcon(ipVolume);
         }
-
-        case SYSTEMTRAYICON_VOLUME: {
-            isMute = mate_mixer_stream_control_get_mute(outputControl);
-            int opVolume = mate_mixer_stream_control_get_volume(outputControl);
-            opVolume = opVolume*100/65536.0 + 0.5;
-            if (isMute) {
-                m_displayVolumeValue->setNum(opVolume);
-                mate_mixer_stream_control_set_mute(outputControl,FALSE);
-                setOpMuteButtonIcon(opVolume);
-            }
-            else {
-                mate_mixer_stream_control_set_mute(outputControl,TRUE);
-                muteButtonIcon = "audio-volume-muted";
-                icon = QIcon::fromTheme(muteButtonIcon);
-                m_muteButton->setIcon(icon);
-            }
-            break;
+        else {
+            mate_mixer_stream_control_set_mute(inputControl,TRUE);
+            muteButtonIcon = "audio-input-microphone-muted";
+            icon = QIcon::fromTheme(muteButtonIcon);
+            m_muteButton->setIcon(icon);
         }
-        default:
+        break;
+    }
+    case SYSTEMTRAYICON_VOLUME: {
+        isMute = mate_mixer_stream_control_get_mute(outputControl);
+        int opVolume = mate_mixer_stream_control_get_volume(outputControl);
+        opVolume = opVolume*100/65536.0 + 0.5;
+        if (isMute) {
+            m_displayVolumeValue->setNum(opVolume);
+            mate_mixer_stream_control_set_mute(outputControl,FALSE);
+            setOpMuteButtonIcon(opVolume);
+        }
+        else {
+            mate_mixer_stream_control_set_mute(outputControl,TRUE);
+            muteButtonIcon = "audio-volume-muted";
+            icon = QIcon::fromTheme(muteButtonIcon);
+            m_muteButton->setIcon(icon);
+        }
+        break;
+    }
+    default:
         break;
     }
 }
@@ -465,39 +463,39 @@ bool UkmediaControlWidget::getOpMuteStatus()
 void UkmediaControlWidget::volumeSliderChanged(int volume)
 {
     switch (trayIconType) {
-        //麦克风托盘图标
-        case SYSTEMTRAYICON_MICROPHONE: {
-            if (volume > 0) {
-                mate_mixer_stream_control_set_mute(inputControl,FALSE);
-                m_displayVolumeValue->setNum(volume);
-                mate_mixer_stream_control_set_volume(inputControl,volume*65536/100);
-            }
-            else if (volume <= 0) {
-                mate_mixer_stream_control_set_mute(inputControl,TRUE);
-                mate_mixer_stream_control_set_volume(inputControl,0);
-                m_displayVolumeValue->setNum(0);
-            }
-            Q_EMIT sliderSystemTrayIcon(trayIconType);
-            setIpMuteButtonIcon(volume);
-            break;
+    //麦克风托盘图标
+    case SYSTEMTRAYICON_MICROPHONE: {
+        if (volume > 0) {
+            mate_mixer_stream_control_set_mute(inputControl,FALSE);
+            m_displayVolumeValue->setNum(volume);
+            mate_mixer_stream_control_set_volume(inputControl,volume*65536/100);
         }
-        //输出声音托盘图标
-        case SYSTEMTRAYICON_VOLUME: {
-            if (volume > 0) {
-                mate_mixer_stream_control_set_mute(outputControl,FALSE);
-                m_displayVolumeValue->setNum(volume);
-                mate_mixer_stream_control_set_volume(outputControl,volume*65536/100);
-            }
-            else if (volume <= 0) {
-                mate_mixer_stream_control_set_mute(outputControl,TRUE);
-                mate_mixer_stream_control_set_volume(outputControl,0);
-                m_displayVolumeValue->setNum(0);
-            }
-            Q_EMIT sliderSystemTrayIcon(trayIconType);
-            setOpMuteButtonIcon(volume);
-            break;
+        else if (volume <= 0) {
+            mate_mixer_stream_control_set_mute(inputControl,TRUE);
+            mate_mixer_stream_control_set_volume(inputControl,0);
+            m_displayVolumeValue->setNum(0);
         }
-        default:
+        Q_EMIT sliderSystemTrayIcon(trayIconType);
+        setIpMuteButtonIcon(volume);
+        break;
+    }
+    //输出声音托盘图标
+    case SYSTEMTRAYICON_VOLUME: {
+        if (volume > 0) {
+            mate_mixer_stream_control_set_mute(outputControl,FALSE);
+            m_displayVolumeValue->setNum(volume);
+            mate_mixer_stream_control_set_volume(outputControl,volume*65536/100);
+        }
+        else if (volume <= 0) {
+            mate_mixer_stream_control_set_mute(outputControl,TRUE);
+            mate_mixer_stream_control_set_volume(outputControl,0);
+            m_displayVolumeValue->setNum(0);
+        }
+        Q_EMIT sliderSystemTrayIcon(trayIconType);
+        setOpMuteButtonIcon(volume);
+        break;
+    }
+    default:
         break;
     }
 }
@@ -553,14 +551,15 @@ void UkmediaControlWidget::acceptOpSystemTrayIconTriggered(SystemTrayIconType ty
 void UkmediaControlWidget::muteButtonClicked()
 {
     switch (trayIconType) {
-        case SYSTEMTRAYICON_MICROPHONE : {
-            mute();
+    case SYSTEMTRAYICON_UNKNOW:
         break;
-        }
-        case SYSTEMTRAYICON_VOLUME:{
-            mute();
+    case SYSTEMTRAYICON_MICROPHONE : {
+        mute();
+    break;
+    }
+    case SYSTEMTRAYICON_VOLUME:
+        mute();
         break;
-        }
     }
 }
 

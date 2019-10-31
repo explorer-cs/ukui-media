@@ -50,6 +50,5 @@ SOURCES += \
 RESOURCES += \
     res.qrc
 
-
 TRANSLATIONS += \
     ../../po/zh_CN.ts

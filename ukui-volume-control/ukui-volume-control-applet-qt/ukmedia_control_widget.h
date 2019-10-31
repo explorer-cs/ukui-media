@@ -27,7 +27,6 @@ typedef enum {
     SYSTEMTRAYICON_VOLUME   //声音托盘图标类型
 }SystemTrayIconType;
 
-static SystemTrayIconType trayIconType = SYSTEMTRAYICON_UNKNOW;
 extern SystemTrayIconType trayIconType;
 
 class UkmediaSlider : public QSlider
@@ -54,9 +53,7 @@ protected:
 class UkmediaControlWidget : public QWidget
 {
     Q_OBJECT
-
 public:
-
     UkmediaControlWidget(QWidget *parent = nullptr);
     ~UkmediaControlWidget();
     void dockWidgetInit();
@@ -65,27 +62,25 @@ public:
     void scrollUp();
     void scrollDown();
 
-    static void outputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
-    static void inputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
 
     int getIpVolume();
-    void setIpVolume(int volume);
     bool getIpMuteStatus();
+    void setIpVolume(int volume);
 
     int getOpVolume();
-    void setOpVolume(int volume);
     bool getOpMuteStatus();
+    void setOpVolume(int volume);
 
     void mateMixerInit();
     //声音输出托盘栏设置
-    void ukmediaGetDefaultOutputStream();
     void outputVolumeNotify();
     void outputVolumeChanged();
+    void getDefaultOutputStream();
 
     //麦克风托盘栏设置
-    void ukmediaGetDefaultInputStream();
     void inputVolumeNotify();
     void inputVolumeChanged();
+    void getDefaultInputStream();
 
     void setIpSystemTrayIconVolume();
     void setOpSystemTrayIconVolume();
@@ -93,39 +88,45 @@ public:
     void muteWidget(int volume,bool status);
     void setIpMuteButtonIcon(int volume);
     void setOpMuteButtonIcon(int volume);
-    friend class UkmediaSystemTrayWidget ;
+
+    static void outputControlVolumeNotify(MateMixerStreamControl *control,
+                                          GParamSpec *pspec, UkmediaControlWidget *p);
+    static void inputControlVolumeNotify(MateMixerStreamControl *control,
+                                         GParamSpec *pspec, UkmediaControlWidget *p);
+
     friend class UkmediaSystemTrayIcon;
+    friend class UkmediaSystemTrayWidget ;
     friend class UkmediaIpSystemTrayWidget;
 private:
-    QLabel *m_displaySpeakerLabel;
     QPushButton *m_muteButton;
+    QLabel *m_displaySpeakerLabel;
     QLabel *m_displayVolumeValue;
     UkmediaSlider *m_volumeSlider;
     MateMixerContext *ukuiContext;
+    MateMixerStream *inputStream;
+    MateMixerStream *outputStream;
     MateMixerStreamControl *outputControl;
     MateMixerStreamControl *inputControl;
-    MateMixerStream *outputStream;
-    MateMixerStream *inputStream;
 
 Q_SIGNALS:
-    void valueChangedSignal(int);
     void emitVolume(int);
-    void sliderSystemTrayIcon(SystemTrayIconType type);
+    void valueChangedSignal(int);
     void micMixerMuteSignal(bool,guint);
     void soundMixerMuteSignal(bool,guint);
+    void sliderSystemTrayIcon(SystemTrayIconType type);
     void updateSystemTrayIconSignal(int volume,SystemTrayIconType type,bool status);
 
 public Q_SLOTS:
+    void muteButtonClicked();
     void acceptOpVolume(int);
     void acceptIpVolume(int);
-    void volumeSliderChanged(int volume);
-    void acceptOpSystemTrayIconTriggered(SystemTrayIconType type);
-    void acceptIpSystemTrayIconTriggered(SystemTrayIconType type);
-    void muteButtonClicked();
-    void acceptOpSystemTrayIconRoll(SystemTrayIconType type);
-    void acceptIpSystemTrayIconRoll(SystemTrayIconType type);
     void acceptOpMixerMute(bool,guint);
     void acceptIpMixerMute(bool,guint);
+    void volumeSliderChanged(int volume);
+    void acceptOpSystemTrayIconRoll(SystemTrayIconType type);
+    void acceptIpSystemTrayIconRoll(SystemTrayIconType type);
+    void acceptOpSystemTrayIconTriggered(SystemTrayIconType type);
+    void acceptIpSystemTrayIconTriggered(SystemTrayIconType type);
 
 protected:
     bool event(QEvent *event);//重写窗口事件
