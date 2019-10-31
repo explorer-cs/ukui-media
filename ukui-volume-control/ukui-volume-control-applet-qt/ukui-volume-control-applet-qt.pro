@@ -25,15 +25,17 @@ DEFINES += QT_DEPRECATED_WARNINGS \
 target.path = /usr/bin
 INSTALLS += target
 
-CONFIG += c++11 \
-	  no_keywords link_pkgconfig \
+CONFIG += \
+    c++11 \
+    no_keywords link_pkgconfig \
 
-PKGCONFIG += gtk+-3.0	\
-             glib-2.0   \
-             libmatemixer\
-             mate-desktop-2.0\
-             unique-1.0\
-             libcanberra\
+PKGCONFIG += \
+    gtk+-3.0 \
+    glib-2.0 \
+    libmatemixer \
+    mate-desktop-2.0 \
+    unique-1.0 \
+    libcanberra \
 # Input
 
 HEADERS += \
