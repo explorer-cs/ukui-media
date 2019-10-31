@@ -8,9 +8,7 @@ QT_INSTALL_DIR := $(shell pwd)/debian/tmp/
 	dh $@
 	mkdir -p ukui-volume-control/ukui-volume-control-applet-qt/build/
 	cd ukui-volume-control/ukui-volume-control-applet-qt/build/ && qmake ../
-	echo 111
 	make -C ukui-volume-control/ukui-volume-control-applet-qt/build/
-	echo 222
 
 override_dh_install:
 	dh_install
