@@ -5,14 +5,13 @@
 #include <QPushButton>
 #include <QAction>
 #include <QSystemTrayIcon>
-//#include "ukmedia_control_widget.h"
+#include "ukmedia_control_widget.h"
 #include <QSystemTrayIcon>
 #include <QMainWindow>
 #include <QRadioButton>
 #include <QWheelEvent>
 #include <QLineEdit>
 #include <QMenu>
-#include "ukmedia_ip_system_tray_widget.h"
 
 #define TRANSLATIONS_DIR "/home/fzx/f/ukui-media-git/ukui-media/ukui-media/po"
 
@@ -43,27 +42,34 @@ public:
     void inputSystemTrayIconInit(int volume,bool status);
     void outputSystemTrayMenuInit();
     void inputSystemTrayMenuInit();
-    void updateIpSystemTrayIcon(int volume);
-    void updateOpSystemTrayIcon(int volume);
+
+    void ipSystemTrayControl();
+    void opSystemTrayControl();
+
+    void updateOutputSystemTrayIcon(int volume,bool status);
+    void updateInputSystemTrayIcon(int volume,bool status);
     friend class UkmediaSystemTrayIcon;
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint&);
+    void triggeredSystemIcon(SystemTrayIconType type);
+
+    void systemTrayRoll(SystemTrayIconType type);
 
 public Q_SLOTS:
     void activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
     void activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason);
     void jumpControlPanel();
-    void slidChangeOpSystemTrayIcon(int volume);
-    void slidChangeIpSystemTrayIcon(int volume);
+    void sliderChangeSystemTrayIcon(int volume);
+    void buttonChangeSystemTrayIcon();
+
     void outputActionMuteTriggered(bool);
     void inputActionMuteTriggered(bool);
     void acceptOpWheelRollEvent(bool);
     void acceptIpWheelRollEvent(bool);
 
-    void buttonChangeOpSystemTrayIcon();
-    void buttonChangeIpSystemTrayIcon();
-
+    void acceptSliderSystemTrayIcon(SystemTrayIconType type);
+    void soundPreferenceChangeSystemTrayIcon(int volume,SystemTrayIconType type,bool status);
 private:
     QPushButton *btnVoice;
     QAction *inputActionMute;
@@ -71,9 +77,8 @@ private:
     QAction *outputActionMute;
     QAction *outputActionSoundPreference;
     UkmediaSystemTrayIcon *outputSystemTray;
-    UkmediaControlWidget *outputWidget;
     UkmediaSystemTrayIcon *inputSystemTray;
-    UkmediaControlWidget *inputWidget;
+    UkmediaControlWidget *widget;
     QMenu *outputMenu ;
     QMenu *inputMenu;
 

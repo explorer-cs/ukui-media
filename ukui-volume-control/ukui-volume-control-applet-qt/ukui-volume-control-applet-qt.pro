@@ -39,20 +39,16 @@ PKGCONFIG += \
 # Input
 
 HEADERS += \
-    ukmedia_application.h \
     ukmedia_control_widget.h \
     ukmedia_systemtray_widget.h
 
-
-
 SOURCES += \
-    ukmedia_application.cpp \
     ukmedia_control_widget.cpp \
     ukmedia_systemtray_widget.cpp\
     main.cpp
 
 RESOURCES += \
-    ../../data/images/images.qrc
+    res.qrc
 
 
 TRANSLATIONS += \

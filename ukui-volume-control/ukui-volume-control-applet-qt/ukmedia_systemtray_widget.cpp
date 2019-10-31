@@ -26,6 +26,7 @@
 
 int count = 0;
 
+
 UkmediaSystemTrayIcon::UkmediaSystemTrayIcon(QWidget *parent)
 {
     Q_UNUSED(parent);
@@ -39,72 +40,243 @@ UkmediaSystemTrayIcon::~UkmediaSystemTrayIcon()
 UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     : QMainWindow (parent)
 {
-    int opVolume,ipVolume;
-    bool opStatus,ipStatus;
+    widget = new UkmediaControlWidget();
+    widget->dockWidgetInit();
 
+    //初始化麦克风和声音托盘
     inputSystemTrayMenuInit();
     outputSystemTrayMenuInit();
-    inputWidget->ipDockWidgetInit();
-    inputWidget->ukmediaGetDefaultInputStream();
-    ipVolume = inputWidget->getIpVolume();
-    ipStatus = inputWidget->getIpMuteStatus();
 
-    inputSystemTrayIconInit(ipVolume,ipStatus);
-    inputWidget->inputVolumeNotify();
-    inputWidget->inputVolumeChanged();
+    //麦克风、声音托盘获取control
+    ipSystemTrayControl();
+    opSystemTrayControl();
 
-    //输出声音控制 输出托盘栏设置
-    outputWidget->opDockWidgetInit();
-    outputWidget->ukmediaGetDefaultOutputStream();
-    opVolume = outputWidget->getOpVolume();
-    opStatus = outputWidget->getOpMuteStatus();
-    outputSystemTrayIconInit(opVolume,opStatus);
-    //输出声音改变通知
-    outputWidget->outputVolumeNotify();
-    outputWidget->outputVolumeChanged();
-
-    //隐藏任务栏图标
-    //setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
+    this->setObjectName("ukmediaSystemWidget");
+
     //在构造中设置窗体的MouseTracking属性
     this->setMouseTracking(true);
-    outputWidget->setMouseTracking(true);
+    widget->setMouseTracking(true);
 
-    //点击托盘栏声音图标显示音量条
-    connect(outputSystemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
-    connect(inputSystemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
     //设置获取焦点事件
     setFocusPolicy(Qt::ClickFocus);
-    //设置静音功能
-    connect(outputActionMute,SIGNAL(triggered(bool)),this,SLOT(outputActionMuteTriggered(bool)));
-    connect(outputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,SLOT(acceptOpWheelRollEvent(bool)));
 
-    connect(inputActionMute,SIGNAL(triggered(bool)),this,SLOT(inputActionMuteTriggered(bool)));
-    connect(inputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,SLOT(acceptIpWheelRollEvent(bool)));
-    //更改系统托盘图标
-    connect(outputWidget->m_opVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(slidChangeOpSystemTrayIcon(int)));
-    connect(inputWidget->m_ipVolumeSlider,SIGNAL(valueChanged(int)),this,SLOT(slidChangeIpSystemTrayIcon(int)));
+    //点击托盘栏声音图标显示音量条
+    connect(outputSystemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),\
+            this,SLOT(activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
+    connect(inputSystemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),\
+            this,SLOT(activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
 
-    connect(outputWidget->m_opMuteButton,SIGNAL(clicked()),this,SLOT(buttonChangeOpSystemTrayIcon()));
-    connect(inputWidget->m_ipMuteButton,SIGNAL(clicked()),this,SLOT(buttonChangeIpSystemTrayIcon()));
-    //连接声音首选项
-    connect(outputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
-    connect(inputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
+    //更改系统托盘图
+    connect(widget->m_volumeSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderChangeSystemTrayIcon(int)));
+    connect(widget->m_muteButton,SIGNAL(clicked()),this,SLOT(buttonChangeSystemTrayIcon()));
+
+    //声音首选项中改变托盘图标
+    connect(widget,SIGNAL(updateSystemTrayIconSignal(int,SystemTrayIconType,bool)),\
+            this,SLOT(soundPreferenceChangeSystemTrayIcon(int,SystemTrayIconType,bool)));
     //设置中心窗口
-    this->setCentralWidget(outputWidget);
-    resize(160,41);
+    this->setCentralWidget(widget);
+    resize(300,80);
 }
 
+
+void UkmediaSystemTrayWidget::ipSystemTrayControl()
+{
+    int ipVolume;
+    bool ipStatus;
+    //获取输入流
+    widget->ukmediaGetDefaultInputStream();
+    ipVolume = widget->getIpVolume();
+    ipStatus = widget->getIpMuteStatus();
+
+    //设置麦克风托盘图标的初始值
+    inputSystemTrayIconInit(ipVolume,ipStatus);
+
+    //点击、滚动麦克风托盘图标
+    connect(this,SIGNAL(triggeredSystemIcon(SystemTrayIconType)),widget,\
+            SLOT(acceptIpSystemTrayIconTriggered(SystemTrayIconType)));
+    connect(this,SIGNAL(systemTrayRoll(SystemTrayIconType)),widget,\
+            SLOT(acceptIpSystemTrayIconRoll(SystemTrayIconType)));
+    connect(inputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,\
+            SLOT(acceptIpWheelRollEvent(bool)));
+
+    //静音和声音首选项的设置
+    connect(inputActionMute,SIGNAL(triggered(bool)),this,SLOT(inputActionMuteTriggered(bool)));
+    connect(inputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
+}
+
+/*
+    更新麦克风托盘图标
+*/
+void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
+{
+    bool show = false;
+    QString inputSystemTrayIcon;
+    QIcon icon;
+    QIcon::setThemeName("ukui-icon-theme");
+
+    if (isMute) {
+        mate_mixer_stream_control_set_mute(widget->inputControl,isMute);
+        inputSystemTrayIcon = "audio-input-microphone-muted";
+        icon = QIcon::fromTheme(inputSystemTrayIcon);
+        inputSystemTray->setIcon(icon);
+    }
+    else if (volume <= 0) {
+        inputSystemTrayIcon = "audio-input-microphone-muted";
+        icon = QIcon::fromTheme(inputSystemTrayIcon);
+        inputSystemTray->setIcon(icon);
+    }
+    else if (volume > 0 && volume <= 33) {
+        inputSystemTrayIcon = "audio-input-microphone-low";
+        icon = QIcon::fromTheme(inputSystemTrayIcon);
+        inputSystemTray->setIcon(icon);
+    }
+    else if (volume >33 && volume <= 66) {
+        inputSystemTrayIcon = "audio-input-microphone-medium";
+        icon = QIcon::fromTheme(inputSystemTrayIcon);
+        inputSystemTray->setIcon(icon);
+    }
+    else {
+        inputSystemTrayIcon = "audio-input-microphone-high";
+        icon = QIcon::fromTheme(inputSystemTrayIcon);
+        inputSystemTray->setIcon(icon);
+    }
+    //设置麦克风右键菜单的静音标签的勾选状态
+    if (mate_mixer_stream_control_get_mute(widget->inputControl)) {
+        inputActionMute->setChecked(true);
+    }
+    else {
+        inputActionMute->setChecked(false);
+    }
+
+    //设置麦克风托盘图标是否可见
+    MateMixerStreamControl *control;
+    const gchar *app_id;
+    const GList *inputs = mate_mixer_stream_list_controls(widget->inputStream);
+    control = mate_mixer_stream_get_default_control(widget->inputStream);
+
+    while (inputs != NULL) {
+        MateMixerStreamControl *input = MATE_MIXER_STREAM_CONTROL (inputs->data);
+        MateMixerStreamControlRole role = mate_mixer_stream_control_get_role(input);
+
+        if (role == MATE_MIXER_STREAM_CONTROL_ROLE_APPLICATION) {
+            MateMixerAppInfo *app_info = mate_mixer_stream_control_get_app_info (input);
+            app_id = mate_mixer_app_info_get_id (app_info);
+            if (app_id == NULL) {
+               /* A recording application which has no
+                * identifier set */
+                g_debug ("Found a recording application control %s",
+                         mate_mixer_stream_control_get_label (input));
+                if G_UNLIKELY (control == NULL) {
+                       /* In the unlikely case when there is no
+                        * default input control, use the application
+                        * control for the icon */
+                    control = input;
+                }
+                show = TRUE;
+                break;
+            }
+            if (strcmp (app_id, "org.mate.VolumeControl") != 0 &&
+                strcmp (app_id, "org.gnome.VolumeControl") != 0 &&
+                strcmp (app_id, "org.PulseAudio.pavucontrol") != 0) {
+                g_debug ("Found a recording application %s", app_id);
+                if G_UNLIKELY (control == NULL)
+                    control = input;
+
+                show = TRUE;
+                break;
+            }
+        }
+        inputs = inputs->next;
+    }
+    if (show == TRUE)
+        g_debug ("Input icon enabled");
+    else
+        g_debug ("There is no recording application, input icon disabled");
+    inputSystemTray->setVisible(show);
+}
+
+/*
+    更新声音托盘图标
+*/
+void UkmediaSystemTrayWidget::updateOutputSystemTrayIcon(int volume,bool isMute)
+{
+    QString outputSystemTrayIcon;
+    QIcon icon;
+    QIcon::setThemeName("ukui-icon-theme");
+    if (isMute) {
+        mate_mixer_stream_control_set_mute(widget->outputControl,isMute);
+        outputSystemTrayIcon = "audio-volume-muted";
+        icon = QIcon::fromTheme(outputSystemTrayIcon);
+        outputSystemTray->setIcon(icon);
+    }
+    else if (volume <= 0) {
+        outputSystemTrayIcon = "audio-volume-muted";
+        icon = QIcon::fromTheme(outputSystemTrayIcon);
+        outputSystemTray->setIcon(icon);
+    }
+    else if (volume > 0 && volume <= 33) {
+        outputSystemTrayIcon = "audio-volume-low";
+        icon = QIcon::fromTheme(outputSystemTrayIcon);
+        outputSystemTray->setIcon(icon);
+    }
+    else if (volume >33 && volume <= 66) {
+        outputSystemTrayIcon = "audio-volume-medium";
+        icon = QIcon::fromTheme(outputSystemTrayIcon);
+        outputSystemTray->setIcon(icon);
+    }
+    else {
+        outputSystemTrayIcon = "audio-volume-high";
+        icon = QIcon::fromTheme(outputSystemTrayIcon);
+        outputSystemTray->setIcon(icon);
+    }
+
+    //设置声音菜单栏静音选项的勾选状态
+    if (mate_mixer_stream_control_get_mute(widget->outputControl)) {
+        outputActionMute->setChecked(true);
+    }
+    else {
+        outputActionMute->setChecked(false);
+    }
+}
+
+void UkmediaSystemTrayWidget::opSystemTrayControl()
+{
+    int opVolume;
+    bool opStatus;
+
+    //获取输出流、输出声音以及声音静音状态
+    widget->ukmediaGetDefaultOutputStream();
+    opVolume = widget->getOpVolume();
+    opStatus = widget->getOpMuteStatus();
+
+    //声音托盘图标初始化以及更新声音托盘图标
+    outputSystemTrayIconInit(opVolume,opStatus);
+    opVolume = int(opVolume*100/65536.0+0.5);
+    updateOutputSystemTrayIcon(opVolume,opStatus);
+
+    //点击、滚动声音托盘实现音量的控制
+    connect(this,SIGNAL(triggeredSystemIcon(SystemTrayIconType)),widget,SLOT(acceptOpSystemTrayIconTriggered(SystemTrayIconType)));
+    connect(this,SIGNAL(systemTrayRoll(SystemTrayIconType)),widget,SLOT(acceptOpSystemTrayIconRoll(SystemTrayIconType)));
+    connect(outputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,SLOT(acceptOpWheelRollEvent(bool)));
+
+    //菜单栏静音和声音首选项
+    connect(outputActionMute,SIGNAL(triggered(bool)),this,SLOT(outputActionMuteTriggered(bool)));
+    connect(outputActionSoundPreference,SIGNAL(triggered()),this,SLOT(jumpControlPanel()));
+}
+
+/*
+    麦克风托盘图标初始化
+*/
 void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 {
     inputSystemTray = new UkmediaSystemTrayIcon(this);
-    inputWidget = new UkmediaControlWidget();
 
-    //麦克风添加右击菜单
+    widget->inputVolumeNotify();
+    //麦克风添加菜单静音和声音首选项
     inputActionMute = new QAction(this);
     inputActionMute->setCheckable(true);
     inputActionMute->setText(tr("Mute(M)"));
-
     inputSystemTray->setToolTip((tr("Input volume control")));
 
     inputActionSoundPreference = new QAction(this);
@@ -116,29 +288,22 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
     inputMenu->addAction(inputActionSoundPreference);
     inputMenu->setFixedWidth(140);
 
-    inputMenu->setStyleSheet(
-    "QMenu::item {"
-         "padding: 4px 25px 4px 20px;"
-         "border: 1px solid transparent;" /* reserve space for selection border */
-    "}"
-    );
-
+    inputMenu->setObjectName("microphoneMenu");
     inputSystemTray->setContextMenu(inputMenu);
+    widget->inputVolumeChanged();
 }
 
 void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
 {
     outputSystemTray = new UkmediaSystemTrayIcon(this);
-    outputWidget = new UkmediaControlWidget();
 
-    //为系统托盘图标添加右击菜单
+    widget->outputVolumeNotify();
+    //为系统托盘图标添加菜单静音和声音首选项
     outputActionMute = new QAction(this);
     outputActionMute->setCheckable(true);
     outputActionMute->setText(tr("Mute(M)"));
-
     outputSystemTray->setToolTip(tr("Output volume control"));
 
-    //sound preference
     outputActionSoundPreference = new QAction(this);
     outputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));
     outputActionSoundPreference->setText(tr("Sound preference(S)"));
@@ -149,80 +314,85 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputMenu->addAction(outputActionSoundPreference);
     outputMenu->setFixedWidth(140);
 
-    outputMenu->setStyleSheet(
-    "QMenu::item {"
-         "padding: 4px 25px 4px 20px;"
-         "border: 1px solid transparent;" /* reserve space for selection border */
-    "}"
-    );
-
     outputSystemTray->setContextMenu(outputMenu);
+    widget->outputVolumeChanged();
 }
 
+/*
+    激活麦克风托盘图标
+*/
 void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason reason)
 {
     QRect rect;
     int local_width;
     int local_height;
+
+    widget->inputVolumeChanged();
+    trayIconType = SYSTEMTRAYICON_MICROPHONE;
+
+    //发送点击托盘的信号
+    Q_EMIT triggeredSystemIcon(trayIconType);
     switch(reason)
     {
+        //鼠标中间键点击图标
         case QSystemTrayIcon::MiddleClick: {
-            if (inputWidget->isHidden()) {
-                if (!outputActionMute->isChecked()) {
-                    outputActionMute->setChecked(true);
+            if (this->isHidden()) {
+                if (!inputActionMute->isChecked()) {
+                    inputActionMute->setChecked(true);
                 }
                 else {
-                    outputActionMute->setChecked(false);
+                    inputActionMute->setChecked(false);
                 }
-                inputWidget->ipMute();
-                bool status = inputWidget->getIpMuteStatus();
-
-                if (status) {
-                    inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-                }
-                else {
-                    int volume = inputWidget->m_ipVolumeSlider->value();
-                    updateIpSystemTrayIcon(volume);
-                }
+                widget->mute();
+                bool isMute = mate_mixer_stream_control_get_mute(widget->inputControl);
+                int volume = mate_mixer_stream_control_get_volume(widget->inputControl);
+                volume = int(volume*100/65536.0+0.5);
+                updateInputSystemTrayIcon(volume,isMute);
             }
             else {
-                //hideWindow();
-                inputWidget->hide();
+                hideWindow();
             }
             break;
         }
+        //鼠标左键点击图标
         case QSystemTrayIcon::Trigger: {
+            int volume = widget->getIpVolume();
+            widget->setIpSystemTrayIconVolume();
+            bool isMute = mate_mixer_stream_control_get_mute(widget->inputControl);
+            volume = int(volume*100/65536.0+0.5);
+            updateInputSystemTrayIcon(volume,isMute);
             rect = inputSystemTray->geometry();
             local_width = QGuiApplication::screens().at(0)->availableGeometry().width() - this->width();
             local_height = QGuiApplication::screens().at(0)->availableGeometry().height() - this->height();
             if (voiceOnOrOff) {
                 if (rect.x()< 1440  && rect.y() > 870) {
-                    inputWidget->setGeometry(rect.x()+11-90,local_height,180,41);//底部
+                    this->setGeometry(local_width,local_height,300,80);
                 }
                 else if (rect.x() < 1440 && rect.y() < 40 ) {
-                    inputWidget->setGeometry(rect.x()+11-90,0,180,41);//上
+                    this->setGeometry(local_width,40,300,80);
                 }
                 else if (rect.x() < 40 &&  rect.y()< 870) {
-                    inputWidget->setGeometry(0,rect.y()+11-15,180,41);//左
+                    this->setGeometry(40,rect.y()-40+8,300,80);
                 }
                 else if (rect.x()>1570 && rect.y() < 870) {
-                    inputWidget->setGeometry(local_width,rect.y()+11-15,1,41);
+                    this->setGeometry(local_width,rect.y()-40+8,300,80);
                 }
-                inputWidget->show();
+                this->show();
                 break;
             }
-            else {            
-                inputWidget->hide();
+            else {
+                this->hide();
                 break;
             }
         }
+        //鼠标左键双击图标
         case QSystemTrayIcon::DoubleClick: {
-            inputWidget->hide();
+            this->hide();
             break;
         }
         case QSystemTrayIcon::Context: {
             if (!this->isHidden()) {
-                inputWidget->hide();
+                this->hide();
                 inputMenu->setVisible(false);
             }
             else {
@@ -235,15 +405,23 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
     }
 }
 
+/*
+    激活声音托盘图标
+*/
 void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason reason)
 {
+    trayIconType = SYSTEMTRAYICON_VOLUME;
+    //输出声音改变通知
+    widget->outputVolumeChanged();
+    //发送点击托盘的信号
+    Q_EMIT triggeredSystemIcon(trayIconType);
     QRect rect;
     int local_width;
     int local_height;
     switch(reason)
     {
+        //鼠标中间键点击图标
         case QSystemTrayIcon::MiddleClick: {
-
             if (this->isHidden()) {
                 if (!outputActionMute->isChecked()) {
                     outputActionMute->setChecked(true);
@@ -251,41 +429,40 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
                 else {
                     outputActionMute->setChecked(false);
                 }
-                outputWidget->opMute();
-                bool status = outputWidget->getOpMuteStatus();
-
-                if (status) {
-                    outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
-                }
-                else {
-                    int volume = outputWidget->m_opVolumeSlider->value();
-                    updateOpSystemTrayIcon(volume);
-                }
-
+                widget->mute();
+                bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
+                int volume = mate_mixer_stream_control_get_volume(widget->outputControl);
+                volume = int(volume*100/65536.0+0.5);
+                updateOutputSystemTrayIcon(volume,isMute);
             }
             else {
                 hideWindow();
             }
             break;
         }
+        //鼠标左键点击图标
         case QSystemTrayIcon::Trigger: {
+
+            widget->setOpSystemTrayIconVolume();
+            bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
+            int volume = widget->getOpVolume();
+            volume = int(volume*100/65536.0+0.5);
+            updateOutputSystemTrayIcon(volume,isMute);
             rect = outputSystemTray->geometry();
             local_width = QGuiApplication::screens().at(0)->availableGeometry().width() - this->width();
             local_height = QGuiApplication::screens().at(0)->availableGeometry().height() - this->height();
             if (voiceOnOrOff) {
                 if (rect.x()< 1440  && rect.y() > 870) {
-//                    outputWidget->setGeometry(rect.x()+11-90,local_height,180,41);//底部
-                    this->setGeometry(rect.x()+11-90,local_height,180,41);//底部
+                    this->setGeometry( local_width,local_height,300,80);
                 }
                 else if (rect.x() < 1440 && rect.y() < 40 ) {
-                    this->setGeometry(rect.x()+11-90,0,180,41);//上
+                    this->setGeometry(local_width,40,300,80);
                 }
                 else if (rect.x() < 40 &&  rect.y()< 870) {
-                    this->setGeometry(0,rect.y()+11-15,180,41);//左
+                    this->setGeometry(40,rect.y()-40+8,300,80);//左
                 }
                 else if (rect.x()>1570 && rect.y() < 870) {
-                    this->setGeometry(local_width,rect.y()+11-15,180,41);
-
+                    this->setGeometry(local_width,rect.y()-40+8,300,80);
                 }
                 showWindow();
                 break;
@@ -295,6 +472,7 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
                 break;
             }
         }
+        //鼠标中间键点击图标
         case QSystemTrayIcon::DoubleClick: {
             hideWindow();
             break;
@@ -320,12 +498,18 @@ void UkmediaSystemTrayWidget::contextMenuEvent(QContextMenuEvent *event)
     hideWindow();
 }
 
+/*
+    显示window
+*/
 void UkmediaSystemTrayWidget::showWindow()
 {
     this->show();
     voiceOnOrOff = 0;
 }
 
+/*
+    隐藏window
+*/
 void UkmediaSystemTrayWidget::hideWindow()
 {
     this->hide();
@@ -338,6 +522,9 @@ void UkmediaSystemTrayWidget::mousePressEvent(QMouseEvent *event)
     hideWindow();
 }
 
+/*
+    点击窗口之外的部分隐藏
+*/
 bool UkmediaSystemTrayWidget::event(QEvent *event)
 {
     if (event->type() == QEvent::ActivationChange) {
@@ -345,296 +532,326 @@ bool UkmediaSystemTrayWidget::event(QEvent *event)
             hideWindow();
         }
     }
-
     return QWidget::event(event);
 }
 
+/*
+    获取托盘图标的滚动事件
+*/
 bool UkmediaSystemTrayIcon::event(QEvent *event)
 {
+    bool value = false;
     QWheelEvent *e = static_cast<QWheelEvent *>(event);
     if (event->type() == QEvent::Wheel) {
-        bool value = false;
         if (e->delta() > 0) {
             value = true;
-            Q_EMIT  wheelRollEventSignal(value);
         }
         else if (e->delta() < 0) {
             value = false;
-            Q_EMIT  wheelRollEventSignal(value);
         }
+        Q_EMIT  wheelRollEventSignal(value);
+
     }
     return QSystemTrayIcon::event(e);
 
 }
 
+/*
+    window的滚动事件
+*/
 void UkmediaSystemTrayWidget::wheelEvent(QWheelEvent *event)
 {
+    int volume;
     int wheelStep = 65536/20;//滚动大小为5
-//    qDebug() << inputWidget->isHidden();
+    switch (trayIconType) {
+        case SYSTEMTRAYICON_VOLUME:
+            volume = widget->getOpVolume();
+            if (event->delta() >0 ) {
+                volume = volume + wheelStep;
+            }
+            else if (event->delta() < 0 ) {
+               volume = volume - wheelStep;
+            }
+            if (volume < 0) {
+                widget->setOpVolume(0);
+            }
+            else if (volume >= 0 && volume <= 65535) {
 
-    int volume = outputWidget->getOpVolume();
-    if (event->delta() >0 ) {
-        volume = volume + wheelStep;
-    }
-    else if (event->delta() < 0 ) {
-       volume = volume - wheelStep;
-    }
-    if (volume < 0) {
-        outputWidget->setOpVolume(0);
-    }
-    else if (volume >= 0 && volume <= 65535) {
+                widget->setOpVolume(volume);
+            }
+            else if (volume > 65535) {
+                widget->setOpVolume(65535);
+            }
+            break;
+        case SYSTEMTRAYICON_MICROPHONE:
+            volume = widget->getIpVolume();
+            if (event->delta() >0 ) {
+                volume = volume + wheelStep;
+            }
+            else if (event->delta() < 0 ) {
+               volume = volume - wheelStep;
+            }
+            if (volume < 0) {
+                widget->setIpVolume(0);
+            }
+            else if (volume >= 0 && volume <= 65535) {
 
-        outputWidget->setOpVolume(volume);
-    }
-    else if (volume > 65535) {
-        outputWidget->setOpVolume(65535);
+                widget->setIpVolume(volume);
+            }
+            else if (volume > 65535) {
+                widget->setIpVolume(65535);
+            }
+            break;
+        default:
+        break;
     }
     event->accept();
 }
 
+/*
+    跳转到声音首选项
+*/
 void UkmediaSystemTrayWidget::jumpControlPanel()
 {
     QProcess *m_process = new QProcess;
     m_process->start("ukui-volume-control");
 }
 
+/*
+    麦克风托盘图标初始化
+*/
 void UkmediaSystemTrayWidget::inputSystemTrayIconInit(int volume, bool status)
 {
-    volume = int(volume*100/65536.0 + 0.5);
+    volume = volume*100/65536.0 + 0.5;
     if (status) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
         if (!inputActionMute->isChecked()) {
             inputActionMute->setChecked(true);
         }
     }
-    else if (volume <= 0) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-    }
-    else if (volume > 0 && volume <= 33 ) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-low.png"));
-    }
-    else if (volume >33 && volume <= 66 ) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-medium.png"));
-    }
-    else {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-high.png"));
-    }
-    inputSystemTray->setVisible(TRUE);
+    updateInputSystemTrayIcon(volume,status);
 }
 
+/*
+    声音托盘图标初始化
+*/
 void UkmediaSystemTrayWidget::outputSystemTrayIconInit(int volume,bool status)
 {
     volume = volume*100/65536.0 + 0.5;
+
     if (status) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
         if (!outputActionMute->isChecked()) {
             outputActionMute->setChecked(true);
         }
     }
-    else if (volume <= 0) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
-    }
-    else if (volume > 0 && volume <= 33 ) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-low.png"));
-    }
-    else if (volume >33 && volume <= 66 ) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-medium.png"));
-    }
-    else {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-high.png"));
-    }
+    updateOutputSystemTrayIcon(volume,status);
     outputSystemTray->setVisible(TRUE);
 }
 
-void UkmediaSystemTrayWidget::slidChangeIpSystemTrayIcon(int volume)
+/*
+    静音按钮改变托盘图标
+*/
+void UkmediaSystemTrayWidget::buttonChangeSystemTrayIcon()
 {
-    if (volume <= 0) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-    }
-    else if (volume > 0 && volume <= 33) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-low.png"));
-    }
-    else if (volume >33 && volume <= 66) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-medium.png"));
-    }
-    else {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-high.png"));
-    }
-
-    if (mate_mixer_stream_control_get_mute(inputWidget->inputControl)) {
-        inputActionMute->setChecked(true);
-    }
-    else {
-        inputActionMute->setChecked(false);
-    }
-
-}
-
-void UkmediaSystemTrayWidget::updateIpSystemTrayIcon(int volume)
-{
-    if (volume <= 0) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-    }
-    else if (volume > 0 && volume <= 33) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-low.png"));
-    }
-    else if (volume >33 && volume <= 66) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-medium.png"));
-    }
-    else {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-high.png"));
+    int volume;
+    switch (trayIconType) {
+        case SYSTEMTRAYICON_MICROPHONE: {
+            volume = widget->getIpVolume();
+            volume = int(volume*100/65536.0+0.5);
+            bool isMute = mate_mixer_stream_control_get_mute(widget->inputControl);
+            updateInputSystemTrayIcon(volume,isMute);
+            break;
+        }
+        case SYSTEMTRAYICON_VOLUME: {
+        volume = widget->getOpVolume();
+        volume = int(volume*100/65536.0+0.5);
+        bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
+        updateOutputSystemTrayIcon(volume,isMute);
+        break;
+        }
     }
 }
 
-void UkmediaSystemTrayWidget::updateOpSystemTrayIcon(int volume)
+/*
+    拖动滑动条改变托盘图标
+*/
+void UkmediaSystemTrayWidget::sliderChangeSystemTrayIcon(int volume)
 {
-    if (volume <= 0) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
+    //接收滑动条的托盘类型
+    connect(widget,SIGNAL(sliderSystemTrayIcon(SystemTrayIconType)),this,SLOT(acceptSliderSystemTrayIcon(SystemTrayIconType)));
+    switch (trayIconType) {
+        case SYSTEMTRAYICON_VOLUME: {
+        bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
+        updateOutputSystemTrayIcon(volume,isMute);
+        break;
     }
-    else if (volume > 0 && volume <= 33) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-low.png"));
+    case SYSTEMTRAYICON_MICROPHONE: {
+        bool isMute = mate_mixer_stream_control_get_mute(widget->inputControl);
+        updateInputSystemTrayIcon(volume,isMute);
     }
-    else if (volume >33 && volume <= 66) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-medium.png"));
-    }
-    else {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-high.png"));
+        break;
+
+        default:
+        break;
     }
 }
 
-void UkmediaSystemTrayWidget::slidChangeOpSystemTrayIcon(int volume)
+/*
+    声音首选项中改变托盘图标
+*/
+void UkmediaSystemTrayWidget::soundPreferenceChangeSystemTrayIcon(int volume,SystemTrayIconType type,bool status)
 {
-    updateOpSystemTrayIcon(volume);
-    if (mate_mixer_stream_control_get_mute(outputWidget->outputControl)) {
-        outputActionMute->setChecked(true);
-
+    switch (type) {
+        case SYSTEMTRAYICON_VOLUME: {
+        updateOutputSystemTrayIcon(volume,status);
     }
-    else {
-        outputActionMute->setChecked(false);
+        break;
+        case SYSTEMTRAYICON_MICROPHONE:
+            updateInputSystemTrayIcon(volume,status);
+        break;
+
+        default:
+        break;
     }
 }
 
-void UkmediaSystemTrayWidget::buttonChangeIpSystemTrayIcon()
-{
-    if (!inputActionMute->isChecked()) {
-        inputActionMute->setChecked(true);
-    }
-    else {
-        inputActionMute->setChecked(false);
-    }
-    bool status = inputWidget->getIpMuteStatus();
-    if (status) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-    }
-    else {
-
-        int volume = inputWidget->getIpVolume();
-        volume = volume * 100 / 65536.0 + 0.5;
-        updateIpSystemTrayIcon(volume);
-    }
-}
-
-void UkmediaSystemTrayWidget::buttonChangeOpSystemTrayIcon()
-{
-    if (!outputActionMute->isChecked()) {
-        outputActionMute->setChecked(true);
-    }
-    else {
-        outputActionMute->setChecked(false);
-    }
-    bool status = outputWidget->getOpMuteStatus();
-    if (status) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
-    }
-    else {
-
-        int volume = outputWidget->getOpVolume();
-        volume = volume * 100 / 65536.0 + 0.5;
-        updateOpSystemTrayIcon(volume);
-    }
-}
-
+/*
+    麦克风菜单静音点击
+*/
 void UkmediaSystemTrayWidget::inputActionMuteTriggered(bool status)
 {
-    inputWidget->ipMute();
-    status = inputWidget->getIpMuteStatus();
-    if (status) {
-        inputSystemTray->setIcon(QIcon(":/images/audio-input-microphone-muted.png"));
-    }
-    else {
-        int volume = inputWidget->getIpVolume();
-        updateIpSystemTrayIcon(volume);
-    }
+    Q_UNUSED(status);
+    widget->mute();
+    bool isMute = mate_mixer_stream_control_get_mute(widget->inputControl);
+    int volume = mate_mixer_stream_control_get_volume(widget->inputControl);
+    volume = int(volume*100/65536.0+0.5);
+    updateInputSystemTrayIcon(volume,isMute);
 }
 
+/*
+    声音菜单静音点击
+*/
 void UkmediaSystemTrayWidget::outputActionMuteTriggered(bool status)
 {
-    outputWidget->opMute();
-    status = outputWidget->getOpMuteStatus();
-    if (status) {
-        outputSystemTray->setIcon(QIcon(":/images/audio-volume-muted.png"));
-    }
-    else {
-        int volume = outputWidget->getOpVolume();
-        updateOpSystemTrayIcon(volume);
-    }
+    Q_UNUSED(status);
+    widget->mute();
+    bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
+    int volume = mate_mixer_stream_control_get_volume(widget->outputControl);
+    volume = int(volume*100/65536.0+0.5);
+    updateOutputSystemTrayIcon(volume,isMute);
 }
 
+/*
+    按键事件,控制系统音量
+*/
 void UkmediaSystemTrayWidget::keyPressEvent(QKeyEvent *event)
 {
     int volume;
-    if (event->key() == Qt::Key_Home) {
-        outputWidget->m_opVolumeSlider->setValue(0);
+    switch (trayIconType) {
+        case SYSTEMTRAYICON_MICROPHONE : {
+            if (event->key() == Qt::Key_Home) {
+                widget->m_volumeSlider->setValue(0);
+            }
+            else if (event->key() == Qt::Key_End) {
+                widget->m_volumeSlider->setValue(100);
+            }
+            else if (event->key() == Qt::Key_Left) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume-1);
+            }
+            else if (event->key() == Qt::Key_Right) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume+1);
+            }
+            else if(event->key() == Qt::Key_Up) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume-1);
+            }
+            else if (event->key() == Qt::Key_Down) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume+1);
+            }
+            else if (event->key() == Qt::Key_Escape) {
+                hideWindow();
+            }
+            break;
+        }
+        case SYSTEMTRAYICON_VOLUME : {
+            if (event->key() == Qt::Key_Home) {
+                widget->m_volumeSlider->setValue(0);
+            }
+            else if (event->key() == Qt::Key_End) {
+                widget->m_volumeSlider->setValue(100);
+            }
+            else if (event->key() == Qt::Key_Left) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume-1);
+            }
+            else if (event->key() == Qt::Key_Right) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume+1);
+            }
+            else if(event->key() == Qt::Key_Up) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume-1);
+            }
+            else if (event->key() == Qt::Key_Down) {
+                volume = widget->m_volumeSlider->value();
+                widget->m_volumeSlider->setValue(volume+1);
+            }
+            else if (event->key() == Qt::Key_Escape) {
+                hideWindow();
+            }
+            break;
+        }
+        default:
+        break;
     }
-    else if (event->key() == Qt::Key_End) {
-        outputWidget->m_opVolumeSlider->setValue(100);
-    }
-    else if (event->key() == Qt::Key_Left) {
-        volume = outputWidget->m_opVolumeSlider->value();
-        outputWidget->m_opVolumeSlider->setValue(volume-1);
-    }
-    else if (event->key() == Qt::Key_Right) {
-        volume = outputWidget->m_opVolumeSlider->value();
-        outputWidget->m_opVolumeSlider->setValue(volume+1);
-    }
-    else if(event->key() == Qt::Key_Up) {
-        volume = outputWidget->m_opVolumeSlider->value();
-        outputWidget->m_opVolumeSlider->setValue(volume-1);
-    }
-    else if (event->key() == Qt::Key_Down) {
-        volume = outputWidget->m_opVolumeSlider->value();
-        outputWidget->m_opVolumeSlider->setValue(volume+1);
-    }
-    else if (event->key() == Qt::Key_Escape) {
-        hideWindow();
-    }
+
 }
 
+/*
+    接收麦克风滚动事件
+*/
 void UkmediaSystemTrayWidget::acceptIpWheelRollEvent(bool value)
 {
-    int volume = inputWidget->m_ipVolumeSlider->value();
+    trayIconType = SYSTEMTRAYICON_MICROPHONE;
+    int volume = widget->getIpVolume();
+    volume = int(volume*100/65536.0+0.5);
+    Q_EMIT systemTrayRoll(trayIconType);
     if (value) {
-        inputWidget->m_ipVolumeSlider->setValue(volume+5);
+        widget->m_volumeSlider->setValue(volume+5);
     }
     else {
-        inputWidget->m_ipVolumeSlider->setValue(volume-5);
+        widget->m_volumeSlider->setValue(volume-5);
     }
 }
 
+/*
+    接收声音滚动事件
+*/
 void UkmediaSystemTrayWidget::acceptOpWheelRollEvent(bool value)
 {
-    int volume = outputWidget->m_opVolumeSlider->value();
+    trayIconType = SYSTEMTRAYICON_VOLUME;
+    Q_EMIT systemTrayRoll(trayIconType);
+    int volume = widget->getOpVolume();
+    volume = int(volume*100/65536.0+0.5);
     if (value) {
-        outputWidget->m_opVolumeSlider->setValue(volume+5);
+        widget->m_volumeSlider->setValue(volume+5);
     }
     else {
-        outputWidget->m_opVolumeSlider->setValue(volume-5);
+        widget->m_volumeSlider->setValue(volume-5);
     }
+}
+
+/*
+    拖动不同的滑动条更改托盘图标的类型
+*/
+void UkmediaSystemTrayWidget::acceptSliderSystemTrayIcon(SystemTrayIconType type)
+{
+    trayIconType = type;
 }
 
 UkmediaSystemTrayWidget::~UkmediaSystemTrayWidget()
 {
 
 }
-
-

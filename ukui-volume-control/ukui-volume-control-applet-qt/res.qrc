@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>data/qss/ukuimedia.qss</file>
+    </qresource>
+</RCC>

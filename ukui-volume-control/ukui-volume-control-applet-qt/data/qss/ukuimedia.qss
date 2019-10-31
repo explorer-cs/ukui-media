@@ -1,0 +1,50 @@
+/*音量描述label*/
+QLabel#displayDescriptionLabel{
+    color: white;
+}
+
+/*音量值label*/
+QLabel#displayVolumeLabel{
+    color: white;
+    font-family: 'Ubuntu';
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/*滑动条slider*/
+QSlider::groove:horizontal {
+    border: 0px solid #bbb;
+}
+QSlider::sub-page:horizontal {
+    background: #356ab7;
+    border-radius: 2px;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+QSlider::add-page:horizontal {
+    background:  #cccccc;
+    border: 0px solid #777;
+    border-radius: 2px;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+QSlider::handle:horizontal {
+    background:#356ab7;
+    border-radius:3px;
+    width: 6px;
+    height:16px;
+    margin-top:2px;
+    margin-bottom:2px;
+}
+
+/*菜单栏*/
+QMenu::item#microphoneMenu {
+    padding: 4px 25px 4px 20px;
+    border: 1px solid transparent;
+    background-color: rgb(50,50,50);
+}
+
+/*弹出窗口*/
+QMainWindow#ukmediaSystemWidget{
+    background-color: rgb(50,50,50);
+}

@@ -11,7 +11,6 @@
 #include <QDebug>
 #include <QWidget>
 #include <QWheelEvent>
-//#include "ukmedia_ip_system_tray_widget.h"
 extern "C" {
 #include <libmatemixer/matemixer.h>
 #include <gtk/gtk.h>
@@ -22,9 +21,18 @@ extern "C" {
 #define GVC_APPLET_DBUS_NAME    "org.mate.VolumeControlApplet"
 #define KEY_SOUNDS_SCHEMA   "org.mate.sound"
 
+typedef enum {
+    SYSTEMTRAYICON_UNKNOW,  //未知的托盘图标类型
+    SYSTEMTRAYICON_MICROPHONE, //麦克风托盘图标类型
+    SYSTEMTRAYICON_VOLUME   //声音托盘图标类型
+}SystemTrayIconType;
+
+static SystemTrayIconType trayIconType = SYSTEMTRAYICON_UNKNOW;
+extern SystemTrayIconType trayIconType;
+
 class UkmediaSlider : public QSlider
 {
-
+    Q_OBJECT
 public:
     UkmediaSlider(QWidget *parent = nullptr);
     ~UkmediaSlider();
@@ -48,15 +56,15 @@ class UkmediaControlWidget : public QWidget
     Q_OBJECT
 
 public:
+
     UkmediaControlWidget(QWidget *parent = nullptr);
     ~UkmediaControlWidget();
-    void opDockWidgetInit();
-    void ipDockWidgetInit();
-    void opMute();
-    void ipMute();
+    void dockWidgetInit();
+    void mute();
     void setFocus();
     void scrollUp();
     void scrollDown();
+
     static void outputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
     static void inputControlVolumeNotify(MateMixerStreamControl *control, GParamSpec *pspec, UkmediaControlWidget *p);
 
@@ -79,16 +87,20 @@ public:
     void inputVolumeNotify();
     void inputVolumeChanged();
 
+    void setIpSystemTrayIconVolume();
+    void setOpSystemTrayIconVolume();
+
+    void muteWidget(int volume,bool status);
+    void setIpMuteButtonIcon(int volume);
+    void setOpMuteButtonIcon(int volume);
     friend class UkmediaSystemTrayWidget ;
     friend class UkmediaSystemTrayIcon;
     friend class UkmediaIpSystemTrayWidget;
 private:
-    QPushButton *m_opMuteButton;
-    QPushButton *m_ipMuteButton;
-    QLabel *m_opDisplayVolumeValue;
-    UkmediaSlider *m_opVolumeSlider;
-    QLabel *m_ipDisplayVolumeValue;
-    UkmediaSlider *m_ipVolumeSlider;
+    QLabel *m_displaySpeakerLabel;
+    QPushButton *m_muteButton;
+    QLabel *m_displayVolumeValue;
+    UkmediaSlider *m_volumeSlider;
     MateMixerContext *ukuiContext;
     MateMixerStreamControl *outputControl;
     MateMixerStreamControl *inputControl;
@@ -98,14 +110,22 @@ private:
 Q_SIGNALS:
     void valueChangedSignal(int);
     void emitVolume(int);
+    void sliderSystemTrayIcon(SystemTrayIconType type);
+    void micMixerMuteSignal(bool,guint);
+    void soundMixerMuteSignal(bool,guint);
+    void updateSystemTrayIconSignal(int volume,SystemTrayIconType type,bool status);
 
 public Q_SLOTS:
     void acceptOpVolume(int);
     void acceptIpVolume(int);
-    void opMuteButtonClick();
-    void ipMuteButtonClick();
-    void outputVolumeSliderChanged(int volume);
-    void inputVolumeSliderChanged(int volume);
+    void volumeSliderChanged(int volume);
+    void acceptOpSystemTrayIconTriggered(SystemTrayIconType type);
+    void acceptIpSystemTrayIconTriggered(SystemTrayIconType type);
+    void muteButtonClicked();
+    void acceptOpSystemTrayIconRoll(SystemTrayIconType type);
+    void acceptIpSystemTrayIconRoll(SystemTrayIconType type);
+    void acceptOpMixerMute(bool,guint);
+    void acceptIpMixerMute(bool,guint);
 
 protected:
     bool event(QEvent *event);//重写窗口事件
