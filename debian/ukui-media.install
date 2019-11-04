@@ -1,5 +1,5 @@
 usr/bin/
-usr/share/
+usr/share/applications
 data/ukui-media-volume-control-applet.desktop /etc/xdg/autostart
 data/icons/* usr/share/ukui-media/icons/hicolor/
 data/sounds/ukui-sounds-default.xml usr/share/ukui-media/sounds/
