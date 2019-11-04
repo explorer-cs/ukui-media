@@ -7,7 +7,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TEMPLATE = app
-TARGET = ukui-media-volume-control-applet-qt
+TARGET = ukui-volume-control-applet-qt
 INCLUDEPATH += .
 
 # The following define makes your compiler warn you if you use any
@@ -58,6 +58,6 @@ RESOURCES += \
     res.qrc
 
 TRANSLATIONS += \
-    translations/ukui-media-volume-control-applet-qt-zh_CN.ts \
-    translations/ukui-media-volume-control-applet-qt-zh_CN.qm
+    translations/ukui-volume-control-applet-qt-zh_CN.ts \
+    translations/ukui-volume-control-applet-qt-zh_CN.qm
 
