@@ -11,6 +11,16 @@ QLabel#displayVolumeLabel{
     font-weight: bold;
 }
 
+/*右击菜单*/
+QAction {
+    font-color: rgb(255,255,255);
+}
+
+/*静音按钮*/
+QPushButton {
+    background-color:rgb(50,50,50);
+}
+
 /*滑动条slider*/
 QSlider::groove:horizontal {
     border: 0px solid #bbb;

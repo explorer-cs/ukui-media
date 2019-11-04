@@ -1,3 +1,9 @@
+ukui-media (1.1.2-1kord1) disco; urgency=medium
+
+  * Ukui-media for UKUI3.0
+
+ -- fengzhaoxiang <fengzhaoxiang@kylinos.cn>  Mon, 04 Nov 2019 11:22:45 +0800
+
 ukui-media (1.1.2-1) unstable; urgency=medium
 
   * Initial release. (Closes: #903950)

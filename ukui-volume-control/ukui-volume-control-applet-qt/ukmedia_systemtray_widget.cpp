@@ -1,31 +1,22 @@
+#include <QSize>
+#include <QDebug>
+#include <QEvent>
+#include <QTimer>
+#include <QWindow>
+#include <QLayout>
+#include <QScreen>
+#include <QPalette>
+#include <QPainter>
+#include <QProcess>
+#include <QDateTime>
+#include <QGridLayout>
+#include <QMetaObject>
+#include <QMouseEvent>
+#include <QMainWindow>
 #include <QDesktopWidget>
 #include "ukmedia_systemtray_widget.h"
-#include <QPushButton>
-#include <QLabel>
-#include <QDebug>
-#include <QDateTime>
-#include <QTimer>
-#include <QMenu>
-#include <QPalette>
-#include <QLayout>
-#include <QGridLayout>
-#include <QPainter>
-#include <QMouseEvent>
-#include <QSize>
-#include <QAction>
-#include <QMainWindow>
-#include <QWindow>
-#include <QMouseEvent>
-#include <QEvent>
-#include <QApplication>
-#include <QWheelEvent>
-#include <QMetaObject>
-#include <QProcess>
-#include <QScreen>
-#include <QDebug>
 
 int count = 0;
-
 
 UkmediaSystemTrayIcon::UkmediaSystemTrayIcon(QWidget *parent)
 {
@@ -93,11 +84,11 @@ void UkmediaSystemTrayWidget::ipSystemTrayControl()
     inputSystemTrayIconInit(ipVolume,ipStatus);
 
     //点击、滚动麦克风托盘图标
-    connect(this,SIGNAL(triggeredSystemIcon(SystemTrayIconType)),widget,\
+    connect(this,SIGNAL(triggeredSystemIcon(SystemTrayIconType)),widget,
             SLOT(acceptIpSystemTrayIconTriggered(SystemTrayIconType)));
-    connect(this,SIGNAL(systemTrayRoll(SystemTrayIconType)),widget,\
+    connect(this,SIGNAL(systemTrayRoll(SystemTrayIconType)),widget,
             SLOT(acceptIpSystemTrayIconRoll(SystemTrayIconType)));
-    connect(inputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,\
+    connect(inputSystemTray,SIGNAL(wheelRollEventSignal(bool)),this,
             SLOT(acceptIpWheelRollEvent(bool)));
 
     //静音和声音首选项的设置
@@ -270,6 +261,7 @@ void UkmediaSystemTrayWidget::opSystemTrayControl()
 void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 {
     inputSystemTray = new UkmediaSystemTrayIcon(this);
+    QFont font;
 
     widget->inputVolumeNotify();
     //麦克风添加菜单静音和声音首选项
@@ -278,6 +270,7 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
     inputActionMute->setText(tr("Mute(M)"));
     inputSystemTray->setToolTip((tr("Input volume control")));
 
+    inputActionMute->setObjectName("inputActionMute");
     inputActionSoundPreference = new QAction(this);
     inputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));
     inputActionSoundPreference->setText(tr("Sound preference(S)"));
@@ -295,13 +288,13 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
 {
     outputSystemTray = new UkmediaSystemTrayIcon(this);
-
     widget->outputVolumeNotify();
     //为系统托盘图标添加菜单静音和声音首选项
     outputActionMute = new QAction(this);
     outputActionMute->setCheckable(true);
     outputActionMute->setText(tr("Mute(M)"));
     outputSystemTray->setToolTip(tr("Output volume control"));
+    outputActionMute->setObjectName("outputActionMute");
 
     outputActionSoundPreference = new QAction(this);
     outputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));

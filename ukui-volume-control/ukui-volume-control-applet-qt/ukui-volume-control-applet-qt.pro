@@ -23,7 +23,14 @@ DEFINES += QT_DEPRECATED_WARNINGS \
 
 # Default rules for deployment.
 target.path = /usr/bin
-INSTALLS += target
+
+#inst.path += /usr/share/ukui-media/translations
+#inst.files += translations/ukui-media-volume-control-applet-qt_zh_CN.qm
+#              translations/1
+
+INSTALLS += \
+    target \
+#    inst
 
 CONFIG += \
     c++11 \
@@ -51,4 +58,6 @@ RESOURCES += \
     res.qrc
 
 TRANSLATIONS += \
-    ../../po/zh_CN.ts
+    translations/ukui-media-volume-control-applet-qt-zh_CN.ts \
+    translations/ukui-media-volume-control-applet-qt-zh_CN.qm
+

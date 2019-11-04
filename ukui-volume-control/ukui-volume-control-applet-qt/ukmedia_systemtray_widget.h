@@ -1,19 +1,16 @@
 #ifndef UKMEDIA_SYSTEMTRAY_WIDGET_H
 #define UKMEDIA_SYSTEMTRAY_WIDGET_H
 
+#include <QMenu>
 #include <QWidget>
-#include <QPushButton>
 #include <QAction>
+#include <QMainWindow>
+#include <QPushButton>
+#include <QWheelEvent>
 #include <QSystemTrayIcon>
 #include "ukmedia_control_widget.h"
-#include <QSystemTrayIcon>
-#include <QMainWindow>
-#include <QRadioButton>
-#include <QWheelEvent>
-#include <QLineEdit>
-#include <QMenu>
 
-#define TRANSLATIONS_DIR "/home/fzx/f/ukui-media-git/ukui-media/ukui-media/po"
+#define TRANSLATIONS_DIR "/home/fzx/fzx/ukui-media/ukui-media/po"
 
 class UkmediaSystemTrayIcon : public QSystemTrayIcon
 {
