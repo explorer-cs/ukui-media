@@ -8,9 +8,6 @@
 #include <QString>
 #include <string>
 extern "C" {
-#define MATE_DESKTOP_USE_UNSTABLE_API
-#include <libmate-desktop/mate-desktop-utils.h>
-#include <canberra.h>
 #include <gdk/gdk.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
@@ -28,7 +25,8 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
 
     mateMixerInit();
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
-    this->setFixedSize(300,80);
+    this->setFixedSize(280,80);
+
 }
 
 /*
@@ -39,6 +37,8 @@ void UkmediaControlWidget::mateMixerInit()
 //    GSettings *settings;
 //    settings = g_settings_new(KEY_SOUNDS_SCHEMA);
 //    Q_UNUSED(settings);
+
+    //主题图标
 
     if (mate_mixer_init() == FALSE) {
         qDebug() << "libmatemixer initialization failed, exiting";
@@ -95,7 +95,6 @@ void UkmediaControlWidget::muteWidget(int volume,bool status)
 {
     QString muteButtonIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
     switch (trayIconType) {
     case SYSTEMTRAYICON_MICROPHONE: {
         m_volumeSlider->setValue(volume);
@@ -249,12 +248,13 @@ void UkmediaControlWidget::dockWidgetInit()
     QHBoxLayout *hLayout;
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     hLayout = new QHBoxLayout();
-    this->setFixedWidth(300);
+    this->setFixedWidth(280);
     hLayout->setSpacing(15);
     hLayout->addWidget(m_muteButton);
     hLayout->addWidget(m_volumeSlider);
     hLayout->addWidget(m_displayVolumeValue);
 
+//    this->setContentsMargins(15,10,10,15);
     outputStream = mate_mixer_context_get_default_output_stream(this->ukuiContext);
     outputControl = mate_mixer_stream_get_default_control(outputStream);
 
@@ -264,6 +264,8 @@ void UkmediaControlWidget::dockWidgetInit()
     vLayout->addWidget(m_displaySpeakerLabel);
     vLayout->addLayout(hLayout);
     this->setLayout(vLayout);
+
+    vLayout->setContentsMargins(20,10,10,20);
     //当滑动条条发生改变时改变音量
     connect(m_volumeSlider,SIGNAL(valueChanged(int)),this,SLOT(volumeSliderChanged(int)));
     //静音按钮设置静音
@@ -277,7 +279,6 @@ void UkmediaControlWidget:: mute()
 {
     QString muteButtonIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
     switch (trayIconType) {
     case SYSTEMTRAYICON_MICROPHONE: {
         ipIsMute = mate_mixer_stream_control_get_mute(inputControl);
@@ -430,6 +431,8 @@ int UkmediaControlWidget::getOpVolume()
 */
 void UkmediaControlWidget::setIpVolume(int volume)
 {
+    if (volume > 0)
+        mate_mixer_stream_control_set_mute(inputControl,false);
     mate_mixer_stream_control_set_volume(inputControl,volume);
 }
 
@@ -438,6 +441,8 @@ void UkmediaControlWidget::setIpVolume(int volume)
 */
 void UkmediaControlWidget::setOpVolume(int volume)
 {
+    if (volume > 0)
+        mate_mixer_stream_control_set_mute(outputControl,false);
     mate_mixer_stream_control_set_volume(outputControl,volume);
 }
 
@@ -570,7 +575,6 @@ void UkmediaControlWidget::setIpMuteButtonIcon(int volume)
 {
     QString inputMuteButtonIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
     if (volume <= 0) {
         inputMuteButtonIcon = "audio-input-microphone-muted";
         icon = QIcon::fromTheme(inputMuteButtonIcon);
@@ -600,7 +604,6 @@ void UkmediaControlWidget::setOpMuteButtonIcon(int volume)
 {
     QString outputMuteButtonIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
     if (volume <= 0) {
         outputMuteButtonIcon = "audio-volume-muted";
         icon = QIcon::fromTheme(outputMuteButtonIcon);

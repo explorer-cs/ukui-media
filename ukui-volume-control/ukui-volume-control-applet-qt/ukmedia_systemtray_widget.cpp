@@ -16,6 +16,10 @@
 #include <QDesktopWidget>
 #include "ukmedia_systemtray_widget.h"
 
+//监控系统主题
+#define KEY_THEME_SCHEMA   "org.mate.interface"
+#define THEME_ICON_KEY "icon-theme"
+
 int count = 0;
 
 UkmediaSystemTrayIcon::UkmediaSystemTrayIcon(QWidget *parent)
@@ -31,6 +35,8 @@ UkmediaSystemTrayIcon::~UkmediaSystemTrayIcon()
 UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     : QMainWindow (parent)
 {
+    iconThemeSettings = new QGSettings(KEY_THEME_SCHEMA);
+    QVariant var = iconThemeSettings->get(THEME_ICON_KEY);
     widget = new UkmediaControlWidget();
     widget->dockWidgetInit();
 
@@ -52,6 +58,8 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     //设置获取焦点事件
     setFocusPolicy(Qt::ClickFocus);
 
+    //系统图标主题改变
+    connect(iconThemeSettings,SIGNAL(changed(const QString &)),this,SLOT(iconThemeChanged()));
     //点击托盘栏声音图标显示音量条
     connect(outputSystemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),\
             this,SLOT(activatedOutputSystemTrayIcon(QSystemTrayIcon::ActivationReason)));
@@ -67,9 +75,31 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
             this,SLOT(soundPreferenceChangeSystemTrayIcon(int,SystemTrayIconType,bool)));
     //设置中心窗口
     this->setCentralWidget(widget);
-    resize(300,80);
+    resize(280,80);
 }
 
+void UkmediaSystemTrayWidget::iconThemeChanged()
+{
+    int ipVolume,opVolume;
+    bool ipStatus,opStatus;
+    QVariant var = iconThemeSettings->get(THEME_ICON_KEY);
+    QString value = var.value<QString>();
+//    set->set(THEME_ICON_KEY,var);
+    opVolume = mate_mixer_stream_control_get_volume(widget->outputControl);
+    opStatus = mate_mixer_stream_control_get_mute(widget->outputControl);
+    ipVolume = mate_mixer_stream_control_get_volume(widget->inputControl);
+    ipStatus = mate_mixer_stream_control_get_mute(widget->inputControl);
+    opVolume = opVolume*100/65536.0+0.5;
+    ipVolume = ipVolume*100/65536.0+0.5;
+//    QString inputSystemTrayIcon;
+//    QIcon icon;
+//    inputSystemTrayIcon = "audio-input-microphone-medium";
+//    icon = QIcon::fromTheme(inputSystemTrayIcon);
+//    inputSystemTray->setIcon(icon);
+    updateInputSystemTrayIcon(ipVolume,ipStatus);
+    updateOutputSystemTrayIcon(opVolume,opStatus);
+    qDebug() << "设置的主题为" << value;
+}
 
 void UkmediaSystemTrayWidget::ipSystemTrayControl()
 {
@@ -104,8 +134,6 @@ void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
     bool show = false;
     QString inputSystemTrayIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
-
     if (isMute) {
         mate_mixer_stream_control_set_mute(widget->inputControl,isMute);
         inputSystemTrayIcon = "audio-input-microphone-muted";
@@ -115,7 +143,7 @@ void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
     else if (volume <= 0) {
         inputSystemTrayIcon = "audio-input-microphone-muted";
         icon = QIcon::fromTheme(inputSystemTrayIcon);
-        inputSystemTray->setIcon(icon);
+
     }
     else if (volume > 0 && volume <= 33) {
         inputSystemTrayIcon = "audio-input-microphone-low";
@@ -183,7 +211,7 @@ void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
         g_debug ("Input icon enabled");
     else
         g_debug ("There is no recording application, input icon disabled");
-    inputSystemTray->setVisible(show);
+    inputSystemTray->setVisible(true);
 }
 
 /*
@@ -193,7 +221,6 @@ void UkmediaSystemTrayWidget::updateOutputSystemTrayIcon(int volume,bool isMute)
 {
     QString outputSystemTrayIcon;
     QIcon icon;
-    QIcon::setThemeName("ukui-icon-theme");
     if (isMute) {
         mate_mixer_stream_control_set_mute(widget->outputControl,isMute);
         outputSystemTrayIcon = "audio-volume-muted";
@@ -261,8 +288,8 @@ void UkmediaSystemTrayWidget::opSystemTrayControl()
 void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 {
     inputSystemTray = new UkmediaSystemTrayIcon(this);
-    QFont font;
-
+    QIcon icon;
+    QString soundPreference;
     widget->inputVolumeNotify();
     //麦克风添加菜单静音和声音首选项
     inputActionMute = new QAction(this);
@@ -272,13 +299,16 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 
     inputActionMute->setObjectName("inputActionMute");
     inputActionSoundPreference = new QAction(this);
-    inputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));
+
+    soundPreference = "application-audio";
+    icon = QIcon::fromTheme(soundPreference);
+    inputActionSoundPreference->setIcon(icon);
     inputActionSoundPreference->setText(tr("Sound preference(S)"));
 
     inputMenu = new QMenu(this);
     inputMenu->addAction(inputActionMute);
     inputMenu->addAction(inputActionSoundPreference);
-    inputMenu->setFixedWidth(140);
+    inputMenu->setFixedWidth(160);
 
     inputMenu->setObjectName("microphoneMenu");
     inputSystemTray->setContextMenu(inputMenu);
@@ -287,6 +317,8 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
 
 void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
 {
+    QIcon icon;
+    QString soundPreference;
     outputSystemTray = new UkmediaSystemTrayIcon(this);
     widget->outputVolumeNotify();
     //为系统托盘图标添加菜单静音和声音首选项
@@ -297,14 +329,16 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputActionMute->setObjectName("outputActionMute");
 
     outputActionSoundPreference = new QAction(this);
-    outputActionSoundPreference->setIcon(QIcon(":/images/application-audio.png"));
     outputActionSoundPreference->setText(tr("Sound preference(S)"));
+    soundPreference = "application-audio";
+    icon = QIcon::fromTheme(soundPreference);
+    outputActionSoundPreference->setIcon(icon);
 
     //设置右键菜单
     outputMenu = new QMenu(this);
     outputMenu->addAction(outputActionMute);
     outputMenu->addAction(outputActionSoundPreference);
-    outputMenu->setFixedWidth(140);
+    outputMenu->setFixedWidth(160);
 
     outputMenu->setObjectName("outputSoundMenu");
     outputSystemTray->setContextMenu(outputMenu);
@@ -317,8 +351,8 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
 void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::ActivationReason reason)
 {
     QRect rect;
-    int local_width;
-    int local_height;
+    int localWidth ,availableWidth,totalWidth;
+    int localHeight,availableHeight,totalHeight;
 
     widget->inputVolumeChanged();
     trayIconType = SYSTEMTRAYICON_MICROPHONE;
@@ -354,21 +388,35 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
         volume = int(volume*100/65536.0+0.5);
         updateInputSystemTrayIcon(volume,isMute);
         rect = inputSystemTray->geometry();
-        local_width = QGuiApplication::screens().at(0)->availableGeometry().width() - this->width();
-        local_height = QGuiApplication::screens().at(0)->availableGeometry().height() - this->height();
+
+        //屏幕可用宽高
+        availableWidth = QGuiApplication::screens().at(0)->availableGeometry().width();
+        availableHeight = QGuiApplication::screens().at(0)->availableGeometry().height();
+        //总共宽高
+        totalWidth =  QGuiApplication::screens().at(0)->size().width();
+        totalHeight = QGuiApplication::screens().at(0)->size().height();
+        localWidth = availableWidth - this->width();
+        localHeight = availableHeight - this->height();
+
+        qDebug() << "宽\高" << availableWidth << availableHeight << rect.x() << rect.y();
         if (voiceOnOrOff) {
-            if (rect.x()< 1440  && rect.y() > 870) {
-                this->setGeometry(local_width,local_height,300,80);
+            if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
+                qDebug() << "下" ;
+                this->setGeometry(localWidth,availableHeight-this->height(),280,80);
             }
-            else if (rect.x() < 1440 && rect.y() < 40 ) {
-                this->setGeometry(local_width,40,300,80);
+            else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
+                qDebug() << "上";
+                this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
             }
-            else if (rect.x() < 40 &&  rect.y()< 870) {
-                this->setGeometry(40,rect.y()-40+8,300,80);
+            else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
+                qDebug() << "左";
+                this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
             }
-            else if (rect.x()>1570 && rect.y() < 870) {
-                this->setGeometry(local_width,rect.y()-40+8,300,80);
+            else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
+                qDebug() << "右";
+                this->setGeometry(localWidth,localHeight,280,80);
             }
+            qDebug() << "位置:" << this->geometry() << localWidth << localHeight;
             this->show();
             break;
         }
@@ -397,6 +445,10 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
     }
 }
 
+void UkmediaSystemTrayWidget::change()
+{
+    qDebug() << "主窗口改变";
+}
 /*
     激活声音托盘图标
 */
@@ -408,8 +460,8 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
     //发送点击托盘的信号
     Q_EMIT triggeredSystemIcon(trayIconType);
     QRect rect;
-    int local_width;
-    int local_height;
+    int localWidth ,availableWidth,totalWidth;
+    int localHeight,availableHeight,totalHeight;
     switch(reason) {
     //鼠标中间键点击图标
     case QSystemTrayIcon::MiddleClick:
@@ -432,27 +484,50 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         break;
     //鼠标左键点击图标
     case QSystemTrayIcon::Trigger: {
+
         widget->setOpSystemTrayIconVolume();
         bool isMute = mate_mixer_stream_control_get_mute(widget->outputControl);
         int volume = widget->getOpVolume();
         volume = int(volume*100/65536.0+0.5);
         updateOutputSystemTrayIcon(volume,isMute);
         rect = outputSystemTray->geometry();
-        local_width = QGuiApplication::screens().at(0)->availableGeometry().width() - this->width();
-        local_height = QGuiApplication::screens().at(0)->availableGeometry().height() - this->height();
+
+        availableWidth = QGuiApplication::screens().at(0)->availableGeometry().width();
+        availableHeight = QGuiApplication::screens().at(0)->availableGeometry().height();
+
+        QDesktopWidget *desktopWidget = QApplication::desktop();
+        int screenNum = desktopWidget->screenCount();
+        int primaryScreen = desktopWidget->primaryScreen();
+
+        qDebug() << "this locale" << outputSystemTray->geometry() << primaryScreen;
+        connect(desktopWidget,SIGNAL(primaryScreenChanged()),this,SLOT(change()));
+
+        totalWidth = desktopWidget->width();
+        totalHeight = desktopWidget->height();
+        //totalWidth =  QGuiApplication::screens().at(0)->size().width();
+        //totalHeight = QGuiApplication::screens().at(0)->size().height();
+        localWidth = availableWidth - this->width();
+        localHeight = availableHeight - this->height();
+        qDebug() << "总宽度和高度" << totalWidth << totalHeight << desktopWidget->screenGeometry(1);
+//        qDebug() << "宽\高" << availableWidth << availableHeight << rect.x() << rect.y();
         if (voiceOnOrOff) {
-            if (rect.x()< 1440  && rect.y() > 870) {
-                this->setGeometry( local_width,local_height,300,80);
+            if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
+                qDebug() << "下" ;
+                this->setGeometry(localWidth,availableHeight-this->height(),280,80);
             }
-            else if (rect.x() < 1440 && rect.y() < 40 ) {
-                this->setGeometry(local_width,40,300,80);
+            else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
+                qDebug() << "上";
+                this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
             }
-            else if (rect.x() < 40 &&  rect.y()< 870) {
-                this->setGeometry(40,rect.y()-40+8,300,80);//左
+            else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
+                qDebug() << "左";
+                this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
             }
-            else if (rect.x()>1570 && rect.y() < 870) {
-                this->setGeometry(local_width,rect.y()-40+8,300,80);
+            else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
+                qDebug() << "右";
+                this->setGeometry(localWidth,localHeight,280,80);
             }
+//            qDebug() << "位置:" << this->geometry() << localWidth << localHeight;
             showWindow();
             break;
         }

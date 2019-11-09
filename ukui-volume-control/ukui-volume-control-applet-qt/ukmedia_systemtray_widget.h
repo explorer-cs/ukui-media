@@ -65,19 +65,23 @@ public Q_SLOTS:
     void acceptOpWheelRollEvent(bool);
     void acceptIpWheelRollEvent(bool);
 
+    void iconThemeChanged();
     void acceptSliderSystemTrayIcon(SystemTrayIconType type);
     void soundPreferenceChangeSystemTrayIcon(int volume,SystemTrayIconType type,bool status);
+
+    void change();
 private:
+    QMenu *inputMenu;
+    QMenu *outputMenu ;
     QPushButton *btnVoice;
     QAction *inputActionMute;
-    QAction *inputActionSoundPreference;
     QAction *outputActionMute;
-    QAction *outputActionSoundPreference;
-    UkmediaSystemTrayIcon *outputSystemTray;
-    UkmediaSystemTrayIcon *inputSystemTray;
     UkmediaControlWidget *widget;
-    QMenu *outputMenu ;
-    QMenu *inputMenu;
+    QGSettings *iconThemeSettings;
+    QAction *inputActionSoundPreference;
+    QAction *outputActionSoundPreference;
+    UkmediaSystemTrayIcon *inputSystemTray;
+    UkmediaSystemTrayIcon *outputSystemTray;
 
 protected:
     //将窗口设置为随着窗口变化而变化

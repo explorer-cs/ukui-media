@@ -47,14 +47,19 @@ QSlider::handle:horizontal {
     margin-bottom:2px;
 }
 
-/*麦克风菜单栏*/
+/*菜单*/
+QMenu {
+    background-color: rgb(50,50,50);
+}
+
+/*麦克风菜单选项*/
 QMenu::item#microphoneMenu {
     padding: 4px 25px 4px 20px;
     border: 1px solid transparent;
     background-color: rgb(50,50,50);
 }
 
-/*声音菜单栏*/
+/*声音菜单选项*/
 QMenu::item#outputSoundMenu {
     padding: 4px 25px 4px 20px;
     border: 1px solid transparent;

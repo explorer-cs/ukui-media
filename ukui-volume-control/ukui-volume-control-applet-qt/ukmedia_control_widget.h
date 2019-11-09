@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QWidget>
 #include <QWheelEvent>
+#include <QGSettings/QGSettings>
 extern "C" {
 #include <libmatemixer/matemixer.h>
 #include <gtk/gtk.h>
@@ -61,7 +62,6 @@ public:
     void setFocus();
     void scrollUp();
     void scrollDown();
-
 
     int getIpVolume();
     bool getIpMuteStatus();

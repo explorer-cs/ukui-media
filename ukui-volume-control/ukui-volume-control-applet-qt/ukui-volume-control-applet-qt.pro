@@ -40,9 +40,10 @@ PKGCONFIG += \
     gtk+-3.0 \
     glib-2.0 \
     libmatemixer \
-    mate-desktop-2.0 \
-    unique-1.0 \
-    libcanberra \
+    gsettings-qt
+#    mate-desktop-2.0 \
+#    unique-1.0 \
+#    libcanberra \
 # Input
 
 HEADERS += \
