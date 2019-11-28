@@ -25,7 +25,7 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
 
     mateMixerInit();
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
-    this->setFixedSize(300,56);
+    this->setFixedSize(300,80);
 
 }
 
@@ -253,7 +253,7 @@ void UkmediaControlWidget::dockWidgetInit()
     QHBoxLayout *hLayout;
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     hLayout = new QHBoxLayout();
-    this->setFixedWidth(280);
+    this->setFixedWidth(300);
     hLayout->setSpacing(15);
     hLayout->addWidget(m_muteButton);
     hLayout->addWidget(m_volumeSlider);
