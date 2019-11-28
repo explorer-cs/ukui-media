@@ -26,7 +26,7 @@ QSlider::groove:horizontal {
     border: 0px solid #bbb;
 }
 QSlider::sub-page:horizontal {
-    background: #356ab7;
+    background: #2e8ad2;
     border-radius: 2px;
     margin-top:10px;
     margin-bottom:10px;
@@ -49,24 +49,25 @@ QSlider::handle:horizontal {
 
 /*菜单*/
 QMenu {
-    background-color: rgb(50,50,50);
+    background-color: rgba(8,10,12,90%);
 }
 
-/*麦克风菜单选项*/
-QMenu::item#microphoneMenu {
+QMenu::item {
+    color: #ffffff;
     padding: 4px 25px 4px 20px;
     border: 1px solid transparent;
-    background-color: rgb(50,50,50);
+    height: 34px;
 }
 
-/*声音菜单选项*/
-QMenu::item#outputSoundMenu {
-    padding: 4px 25px 4px 20px;
-    border: 1px solid transparent;
-    background-color: rgb(50,50,50);
+QMenu::item:selected{
+    background-color: rgba(190,216,239,20%);
+}
+
+QMenu::item:checked{
+    background-color: rgba(190,216,239,12%);
 }
 
 /*弹出窗口*/
 QMainWindow#ukmediaSystemWidget{
-    background-color: rgb(50,50,50);
+    background-color: rgba(8,10,12,90%);
 }

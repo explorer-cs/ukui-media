@@ -93,6 +93,9 @@ public:
                                           GParamSpec *pspec, UkmediaControlWidget *p);
     static void inputControlVolumeNotify(MateMixerStreamControl *control,
                                          GParamSpec *pspec, UkmediaControlWidget *p);
+    static void on_context_stream_added(MateMixerContext *context,
+                                        const gchar      *name,
+                                        UkmediaControlWidget *w);
 
     friend class UkmediaSystemTrayIcon;
     friend class UkmediaSystemTrayWidget ;

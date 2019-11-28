@@ -308,7 +308,7 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
     inputMenu = new QMenu(this);
     inputMenu->addAction(inputActionMute);
     inputMenu->addAction(inputActionSoundPreference);
-    inputMenu->setFixedWidth(160);
+    inputMenu->setFixedWidth(250);
 
     inputMenu->setObjectName("microphoneMenu");
     inputSystemTray->setContextMenu(inputMenu);
@@ -338,7 +338,7 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputMenu = new QMenu(this);
     outputMenu->addAction(outputActionMute);
     outputMenu->addAction(outputActionSoundPreference);
-    outputMenu->setFixedWidth(160);
+    outputMenu->setFixedWidth(250);
 
     outputMenu->setObjectName("outputSoundMenu");
     outputSystemTray->setContextMenu(outputMenu);
@@ -398,25 +398,25 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
         localWidth = availableWidth - this->width();
         localHeight = availableHeight - this->height();
 
-        qDebug() << "宽\高" << availableWidth << availableHeight << rect.x() << rect.y();
+
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
-                qDebug() << "下" ;
+
                 this->setGeometry(localWidth,availableHeight-this->height(),280,80);
             }
             else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
-                qDebug() << "上";
+
                 this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
             }
             else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
-                qDebug() << "左";
+
                 this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
             }
             else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
-                qDebug() << "右";
+
                 this->setGeometry(localWidth,localHeight,280,80);
             }
-            qDebug() << "位置:" << this->geometry() << localWidth << localHeight;
+
             this->show();
             break;
         }
@@ -499,7 +499,7 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         int screenNum = desktopWidget->screenCount();
         int primaryScreen = desktopWidget->primaryScreen();
 
-        qDebug() << "this locale" << outputSystemTray->geometry() << primaryScreen;
+
         connect(desktopWidget,SIGNAL(primaryScreenChanged()),this,SLOT(change()));
 
         totalWidth = desktopWidget->width();
@@ -508,26 +508,26 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         //totalHeight = QGuiApplication::screens().at(0)->size().height();
         localWidth = availableWidth - this->width();
         localHeight = availableHeight - this->height();
-        qDebug() << "总宽度和高度" << totalWidth << totalHeight << desktopWidget->screenGeometry(1);
-//        qDebug() << "宽\高" << availableWidth << availableHeight << rect.x() << rect.y();
+
+
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
-                qDebug() << "下" ;
+
                 this->setGeometry(localWidth,availableHeight-this->height(),280,80);
             }
             else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
-                qDebug() << "上";
+
                 this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
             }
             else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
-                qDebug() << "左";
+
                 this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
             }
             else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
-                qDebug() << "右";
+
                 this->setGeometry(localWidth,localHeight,280,80);
             }
-//            qDebug() << "位置:" << this->geometry() << localWidth << localHeight;
+//
             showWindow();
             break;
         }

@@ -25,7 +25,7 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
 
     mateMixerInit();
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
-    this->setFixedSize(280,80);
+    this->setFixedSize(300,56);
 
 }
 
@@ -53,6 +53,11 @@ void UkmediaControlWidget::mateMixerInit()
     if G_UNLIKELY (mate_mixer_context_open(ukuiContext) == FALSE) {
         g_warning ("Failed to connect to a sound system**********************");
     }
+
+    g_signal_connect (G_OBJECT (ukuiContext),
+                           "stream-added",
+                           G_CALLBACK (on_context_stream_added),
+                           nullptr);
 }
 
 /*
@@ -241,7 +246,7 @@ void UkmediaControlWidget::dockWidgetInit()
     m_muteButton->setFixedSize(16,16);
     m_volumeSlider->setMaximum(100);
     m_volumeSlider->setOrientation(Qt::Horizontal);
-    m_volumeSlider->setFixedSize(180,24);
+    m_volumeSlider->setFixedSize(178,24);
     m_volumeSlider->setSingleStep(10);
 
     //弹出框的控件布局
@@ -624,6 +629,53 @@ void UkmediaControlWidget::setOpMuteButtonIcon(int volume)
         icon = QIcon::fromTheme(outputMuteButtonIcon);
         m_muteButton->setIcon(icon);
     }
+}
+
+void UkmediaControlWidget::on_context_stream_added(MateMixerContext *context,
+                                    const gchar      *name,
+                                    UkmediaControlWidget *w)
+{
+    MateMixerStream   *stream;
+    MateMixerDirection direction;
+
+    stream = mate_mixer_context_get_stream(context,"hw:1");
+    qDebug() << "获取stream的名为:" << mate_mixer_stream_get_name(stream);
+    mate_mixer_context_set_default_input_stream(context,stream);
+
+    stream = mate_mixer_context_get_stream (context, name); //获取流
+    if (G_UNLIKELY (stream == NULL))
+            return;
+
+    direction = mate_mixer_stream_get_direction (stream);
+
+    /* If the newly added stream belongs to the currently selected device and               如果新添加的流属于当前选定的设备并且隐藏了测试按钮，
+     * the test button is hidden, this stream may be the one to allow the                           则此流可能是允许进行声音测试的流，因此我们可能需要启用该按钮
+     * sound test and therefore we may need to enable the button */
+//    if (dialog->priv->hw_profile_combo != NULL && direction == MATE_MIXER_DIRECTION_OUTPUT) {
+//            MateMixerDevice *device1;
+//            MateMixerDevice *device2;
+
+//            device1 = mate_mixer_stream_get_device (stream);
+//            device2 = g_object_get_data (G_OBJECT (dialog->priv->hw_profile_combo),
+//                                         "device");// 从关联的对象表中获取命名字段
+
+//            if (device1 == device2) {
+//                    gboolean show_button;
+
+//                    g_object_get (G_OBJECT (dialog->priv->hw_profile_combo),
+//                                  "show-button", &show_button,
+//                                  NULL);    //获取dialog->priv->hw_profile_combo属性
+
+//                    if (show_button == FALSE)
+//                            update_device_test_visibility (dialog);
+//            }
+//    }
+
+//    bar = g_hash_table_lookup (dialog->priv->bars, name);//在dialog->priv->bars查找name
+//    if (G_UNLIKELY (bar != NULL))
+//            return;
+
+//    add_stream (dialog, stream);
 }
 
 UkmediaSlider::UkmediaSlider(QWidget *parent)
