@@ -53,7 +53,7 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
 
     //在构造中设置窗体的MouseTracking属性
     this->setMouseTracking(true);
-    widget->setMouseTracking(true);
+//    widget->setMouseTracking(true);
 
     //设置获取焦点事件
     setFocusPolicy(Qt::ClickFocus);
@@ -71,7 +71,7 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     connect(widget->m_muteButton,SIGNAL(clicked()),this,SLOT(buttonChangeSystemTrayIcon()));
 
     //声音首选项中改变托盘图标
-    connect(widget,SIGNAL(updateSystemTrayIconSignal(int,SystemTrayIconType,bool)),\
+    connect(widget,SIGNAL(updateSystemTrayIconSignal(int,SystemTrayIconType,bool)),
             this,SLOT(soundPreferenceChangeSystemTrayIcon(int,SystemTrayIconType,bool)));
     //设置中心窗口
     this->setCentralWidget(widget);
@@ -211,7 +211,7 @@ void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
         g_debug ("Input icon enabled");
     else
         g_debug ("There is no recording application, input icon disabled");
-    inputSystemTray->setVisible(true);
+    inputSystemTray->setVisible(show);
 }
 
 /*
@@ -402,19 +402,19 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
 
-                this->setGeometry(localWidth,availableHeight-this->height(),280,80);
+                this->setGeometry(localWidth,availableHeight-this->height(),300,56);
             }
             else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
 
-                this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
+                this->setGeometry(localWidth,totalHeight-availableHeight,300,56);
             }
             else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
 
-                this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
+                this->setGeometry(totalWidth-availableWidth,localHeight,300,56);//左
             }
             else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
 
-                this->setGeometry(localWidth,localHeight,280,80);
+                this->setGeometry(localWidth,localHeight,300,56);
             }
 
             this->show();
@@ -513,19 +513,19 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
 
-                this->setGeometry(localWidth,availableHeight-this->height(),280,80);
+                this->setGeometry(localWidth,availableHeight-this->height(),300,56);
             }
             else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
 
-                this->setGeometry(localWidth,totalHeight-availableHeight,280,80);
+                this->setGeometry(localWidth,totalHeight-availableHeight,300,56);
             }
             else if (rect.x() < 40 && rect.y() > availableHeight/2 && rect.y()< availableHeight) {
 
-                this->setGeometry(totalWidth-availableWidth,localHeight,280,80);//左
+                this->setGeometry(totalWidth-availableWidth,localHeight,300,56);//左
             }
             else if (rect.x() > availableWidth && rect.y() > availableHeight/2 && rect.y() < availableHeight) {
 
-                this->setGeometry(localWidth,localHeight,280,80);
+                this->setGeometry(localWidth,localHeight,300,56);
             }
 //
             showWindow();
@@ -579,24 +579,25 @@ void UkmediaSystemTrayWidget::hideWindow()
     voiceOnOrOff = 1;
 }
 
-void UkmediaSystemTrayWidget::mousePressEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event);
-    hideWindow();
-}
+//void UkmediaSystemTrayWidget::mousePressEvent(QMouseEvent *event)
+//{
+//    Q_UNUSED(event);
+//    hideWindow();
+//}
 
 /*
     点击窗口之外的部分隐藏
 */
-bool UkmediaSystemTrayWidget::event(QEvent *event)
-{
-    if (event->type() == QEvent::ActivationChange) {
-        if (QApplication::activeWindow() != this) {
-            hideWindow();
-        }
-    }
-    return QWidget::event(event);
-}
+//bool UkmediaSystemTrayWidget::event(QEvent *event)
+//{
+//    if (event->type() == QEvent::ActivationChange) {
+//        if (QApplication::activeWindow() != this) {
+//            qDebug() << "action change";
+//            hideWindow();
+//        }
+//    }
+//    return QWidget::event(event);
+//}
 
 /*
     获取托盘图标的滚动事件

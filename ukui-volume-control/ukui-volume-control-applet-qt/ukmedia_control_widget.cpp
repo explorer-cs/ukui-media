@@ -25,7 +25,7 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
 
     mateMixerInit();
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
-    this->setFixedSize(300,80);
+    this->setFixedSize(300,56);
 
 }
 
@@ -58,6 +58,12 @@ void UkmediaControlWidget::mateMixerInit()
                            "stream-added",
                            G_CALLBACK (on_context_stream_added),
                            nullptr);
+
+    g_signal_connect (G_OBJECT (ukuiContext),
+                              "device-added",
+                              G_CALLBACK (on_context_device_added),
+                              nullptr);
+//    mate_mixer_switch_get_active_option(sw);
 }
 
 /*
@@ -232,16 +238,13 @@ void UkmediaControlWidget::outputVolumeChanged()
 void UkmediaControlWidget::dockWidgetInit()
 {
     QFont font("",16,75);
-    m_displaySpeakerLabel = new QLabel(this);
     m_displayVolumeValue = new QLabel(this);
     m_muteButton = new QPushButton(this);
     m_volumeSlider = new UkmediaSlider(this);
 
     m_muteButton->setFlat(true);
-    m_displaySpeakerLabel->setText(tr("Speaker(Realtek(R) Audio)"));
 
     m_displayVolumeValue->setObjectName("displayVolumeLabel");
-    m_displaySpeakerLabel->setObjectName("displayDescriptionLabel");
 
     m_muteButton->setFixedSize(16,16);
     m_volumeSlider->setMaximum(100);
@@ -251,14 +254,12 @@ void UkmediaControlWidget::dockWidgetInit()
 
     //弹出框的控件布局
     QHBoxLayout *hLayout;
-    QVBoxLayout *vLayout = new QVBoxLayout(this);
     hLayout = new QHBoxLayout();
     this->setFixedWidth(300);
     hLayout->setSpacing(15);
     hLayout->addWidget(m_muteButton);
     hLayout->addWidget(m_volumeSlider);
     hLayout->addWidget(m_displayVolumeValue);
-
 //    this->setContentsMargins(15,10,10,15);
     outputStream = mate_mixer_context_get_default_output_stream(this->ukuiContext);
     outputControl = mate_mixer_stream_get_default_control(outputStream);
@@ -266,11 +267,9 @@ void UkmediaControlWidget::dockWidgetInit()
     inputStream = mate_mixer_context_get_default_input_stream(ukuiContext);
     inputControl = mate_mixer_stream_get_default_control(inputStream);
 
-    vLayout->addWidget(m_displaySpeakerLabel);
-    vLayout->addLayout(hLayout);
-    this->setLayout(vLayout);
+    this->setLayout(hLayout);
+    hLayout->setAlignment(this,Qt::AlignCenter);
 
-    vLayout->setContentsMargins(20,10,10,20);
     //当滑动条条发生改变时改变音量
     connect(m_volumeSlider,SIGNAL(valueChanged(int)),this,SLOT(volumeSliderChanged(int)));
     //静音按钮设置静音
@@ -513,15 +512,15 @@ void UkmediaControlWidget::volumeSliderChanged(int volume)
 /*
     点击窗口以外的部分隐藏窗口
 */
-bool UkmediaControlWidget::event(QEvent *event)
-{
-    if (event->type() == QEvent::ActivationChange) {
-        if(QApplication::activeWindow() != this) {
-            hide();
-        }
-    }
-    return QWidget::event(event);
-}
+//bool UkmediaControlWidget::event(QEvent *event)
+//{
+//    if (event->type() == QEvent::ActivationChange) {
+//        if(QApplication::activeWindow() != this) {
+//            hide();
+//        }
+//    }
+//    return QWidget::event(event);
+//}
 
 /*
     点击时设置托盘图标类型为麦克风
@@ -676,6 +675,96 @@ void UkmediaControlWidget::on_context_stream_added(MateMixerContext *context,
 //            return;
 
 //    add_stream (dialog, stream);
+}
+
+void UkmediaControlWidget::on_context_device_added (MateMixerContext *context, const gchar *name, UkmediaControlWidget *dialog)
+{
+        MateMixerDevice *device;
+
+        device = mate_mixer_context_get_device (context, name);
+        if (G_UNLIKELY (device == NULL))
+                return;
+
+        add_device (dialog, device);
+}
+
+void UkmediaControlWidget::add_device(UkmediaControlWidget *dialog, MateMixerDevice *device)
+{
+        GtkTreeModel    *model;
+        GtkTreeIter      iter;
+        GIcon           *icon;
+        const gchar     *name;
+        const gchar     *label;
+        gchar           *status;
+        const gchar     *profile_label = NULL;
+        MateMixerSwitch *profile_switch;
+
+//        model = gtk_tree_view_get_model (GTK_TREE_VIEW (dialog->priv->hw_treeview));
+
+        name  = mate_mixer_device_get_name (device);
+        label = mate_mixer_device_get_label (device);
+
+//        if (find_tree_item_by_name (GTK_TREE_MODEL (model),
+//                                    name,
+//                                    HW_NAME_COLUMN,
+//                                    &iter) == FALSE) {
+//                                             gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+//                                    }
+
+
+        icon = g_themed_icon_new_with_default_fallbacks (mate_mixer_device_get_icon (device));
+
+        profile_switch = find_device_profile_switch (device);
+        if (profile_switch != NULL) {
+                MateMixerSwitchOption *active;
+
+                active = mate_mixer_switch_get_active_option (profile_switch);
+                if (G_LIKELY (active != NULL))
+                        profile_label = mate_mixer_switch_option_get_label (active);
+
+                g_signal_connect (G_OBJECT (profile_switch),
+                                  "notify::active-option",
+                                  G_CALLBACK (on_device_profile_active_option_notify),
+                                  nullptr);
+        }
+
+//        status = device_status (device);
+
+//        gtk_list_store_set (GTK_LIST_STORE (model),
+//                            &iter,
+//                            HW_NAME_COLUMN, name,
+//                            HW_LABEL_COLUMN, label,
+//                            HW_ICON_COLUMN, icon,
+//                            HW_PROFILE_COLUMN, profile_label,
+//                            HW_STATUS_COLUMN, status,
+//                            -1);
+        g_free (status);
+
+}
+
+void UkmediaControlWidget::on_device_profile_active_option_notify (MateMixerDeviceSwitch *swtch,GParamSpec *pspec,UkmediaControlWidget *dialog)
+{
+        MateMixerDevice *device;
+        device = mate_mixer_device_switch_get_device (swtch);
+
+        qDebug() << "switch设备名为:" << mate_mixer_device_get_name(device);
+//        update_device_info (dialog, device);
+}
+
+MateMixerSwitch * UkmediaControlWidget::find_device_profile_switch (MateMixerDevice *device)
+{
+        const GList *switches;
+
+        switches = mate_mixer_device_list_switches (device);
+        while (switches != NULL) {
+                MateMixerDeviceSwitch *swtch = MATE_MIXER_DEVICE_SWITCH (switches->data);
+
+                if (mate_mixer_device_switch_get_role (swtch) == MATE_MIXER_DEVICE_SWITCH_ROLE_PROFILE)
+                        return MATE_MIXER_SWITCH (swtch);
+
+                switches = switches->next;
+        }
+        return NULL;
 }
 
 UkmediaSlider::UkmediaSlider(QWidget *parent)

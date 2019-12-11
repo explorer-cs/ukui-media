@@ -29,22 +29,14 @@ QSlider::sub-page:horizontal {
     background: #2e8ad2;
     border-radius: 2px;
     margin-top:10px;
-    margin-bottom:10px;
+    margin-bottom:11px;
 }
 QSlider::add-page:horizontal {
-    background:  #cccccc;
+    background:  rgba(34,70,84,90%);
     border: 0px solid #777;
     border-radius: 2px;
     margin-top:10px;
-    margin-bottom:10px;
-}
-QSlider::handle:horizontal {
-    background:#356ab7;
-    border-radius:3px;
-    width: 6px;
-    height:16px;
-    margin-top:2px;
-    margin-bottom:2px;
+    margin-bottom:11px;
 }
 
 /*菜单*/

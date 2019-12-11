@@ -96,13 +96,18 @@ public:
     static void on_context_stream_added(MateMixerContext *context,
                                         const gchar      *name,
                                         UkmediaControlWidget *w);
+    static void on_context_device_added(MateMixerContext *context, const gchar *name, UkmediaControlWidget *dialog);
+    static void add_device (UkmediaControlWidget *dialog, MateMixerDevice *device);
+
+    static void on_device_profile_active_option_notify (MateMixerDeviceSwitch *swtch,GParamSpec *pspec,UkmediaControlWidget *dialog);
+
+    static MateMixerSwitch *find_device_profile_switch (MateMixerDevice *device);
 
     friend class UkmediaSystemTrayIcon;
     friend class UkmediaSystemTrayWidget ;
     friend class UkmediaIpSystemTrayWidget;
 private:
     QPushButton *m_muteButton;
-    QLabel *m_displaySpeakerLabel;
     QLabel *m_displayVolumeValue;
     UkmediaSlider *m_volumeSlider;
     MateMixerContext *ukuiContext;
@@ -132,7 +137,7 @@ public Q_SLOTS:
     void acceptIpSystemTrayIconTriggered(SystemTrayIconType type);
 
 protected:
-    bool event(QEvent *event);//重写窗口事件
+//    bool event(QEvent *event);//重写窗口事件
 };
 
 #endif // UKMEDIA_CONTROL_WIDGET_H

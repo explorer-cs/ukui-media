@@ -8,19 +8,19 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc,argv);
     //加载qm翻译文件
-//    QString locale = QLocale::system().name();
-//    QTranslator translator;
+    QString locale = QLocale::system().name();
+    QTranslator translator;
 //    translator.load("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/translations/ukui-media-volume-control-applet-qt-zh_CN.qm");
 //    a.installTranslator(&translator);
     //    QString qmFile = QString(TRANSLATIONS_DIR"/%1.qm").arg(locale);
-//    if (locale == "zh_CN") {
-//        if (translator.load("translations/ukui-media-volume-control-applet-qt-zh_CN.qm")) {
-//            a.installTranslator(&translator);
-//        }
-//        else {
-//            qDebug() << "Load translations file" << locale << "failed!";
-//        }
-//    }
+    if (locale == "zh_CN") {
+        if (translator.load("translations/ukui-media-volume-control-applet-qt-zh_CN.qm")) {
+            a.installTranslator(&translator);
+        }
+        else {
+            qDebug() << "Load translations file" << locale << "failed!";
+        }
+    }
 //    qDebug() << locale;
     //加载qss文件
     QFile qss(":/data/qss/ukuimedia.qss");
