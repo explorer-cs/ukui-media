@@ -211,7 +211,7 @@ void UkmediaSystemTrayWidget::updateInputSystemTrayIcon(int volume,bool isMute)
         g_debug ("Input icon enabled");
     else
         g_debug ("There is no recording application, input icon disabled");
-    inputSystemTray->setVisible(true);
+    inputSystemTray->setVisible(show);
 }
 
 /*
