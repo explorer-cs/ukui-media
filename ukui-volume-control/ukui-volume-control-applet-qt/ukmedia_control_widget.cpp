@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QProcess>
 #include <QString>
+#include <QSpacerItem>
 #include <string>
 extern "C" {
 #include <gdk/gdk.h>
@@ -238,15 +239,20 @@ void UkmediaControlWidget::outputVolumeChanged()
 void UkmediaControlWidget::dockWidgetInit()
 {
     QFont font("",16,75);
+    const QSize iconSize = QSize(32,32);
     m_displayVolumeValue = new QLabel(this);
     m_muteButton = new QPushButton(this);
     m_volumeSlider = new UkmediaSlider(this);
-
+    QRect *rect=new QRect;
+    rect->setRect(0,0,32,32);
+    m_muteButton->setFixedSize(32,32);
     m_muteButton->setFlat(true);
 
+    QSpacerItem *space = new QSpacerItem(20,10);
+
+    m_muteButton->setIconSize(iconSize);
     m_displayVolumeValue->setObjectName("displayVolumeLabel");
 
-    m_muteButton->setFixedSize(16,16);
     m_volumeSlider->setMaximum(100);
     m_volumeSlider->setOrientation(Qt::Horizontal);
     m_volumeSlider->setFixedSize(178,24);
@@ -256,10 +262,11 @@ void UkmediaControlWidget::dockWidgetInit()
     QHBoxLayout *hLayout;
     hLayout = new QHBoxLayout();
     this->setFixedWidth(300);
-    hLayout->setSpacing(15);
+//    hLayout->setSpacing(15);
     hLayout->addWidget(m_muteButton);
     hLayout->addWidget(m_volumeSlider);
     hLayout->addWidget(m_displayVolumeValue);
+    hLayout->setSpacing(10);
 //    this->setContentsMargins(15,10,10,15);
     outputStream = mate_mixer_context_get_default_output_stream(this->ukuiContext);
     outputControl = mate_mixer_stream_get_default_control(outputStream);

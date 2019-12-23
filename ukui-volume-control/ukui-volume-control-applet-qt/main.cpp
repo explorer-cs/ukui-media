@@ -1,12 +1,17 @@
 #include <QApplication>
 #include <QDebug>
 #include <QTranslator>
-#include <QSharedMemory>
+#include <QtSingleApplication>
 #include "ukmedia_systemtray_widget.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc,argv);
+//    QApplication a(argc,argv);
+    QtSingleApplication app("ukui-volume-control-applet",argc,argv);
+    if (app.isRunning()) {
+       app.sendMessage("raise_window_noop");
+       return EXIT_SUCCESS;
+    }
     //加载qm翻译文件
     QString locale = QLocale::system().name();
     QTranslator translator;
@@ -14,12 +19,13 @@ int main(int argc, char *argv[])
 //    a.installTranslator(&translator);
     //    QString qmFile = QString(TRANSLATIONS_DIR"/%1.qm").arg(locale);
     if (locale == "zh_CN") {
-        if (translator.load("translations/ukui-media-volume-control-applet-qt-zh_CN.qm")) {
-            a.installTranslator(&translator);
+        if (translator.load("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/translations/ukui-volume-control-applet-qt-zh_CN.qm")) {
+            app.installTranslator(&translator);
         }
         else {
             qDebug() << "Load translations file" << locale << "failed!";
         }
+
     }
 //    qDebug() << locale;
     //加载qss文件
@@ -30,16 +36,12 @@ int main(int argc, char *argv[])
     qApp->setStyleSheet(qss.readAll());
     qss.close();
 
-    QSharedMemory shared("a");
-    if (shared.attach()) {
-        qDebug() << "ukui-volume-control-applet is running,exit!";
-        return 0;
-    }
-    else {
-    }
-    shared.create(1);
-
     UkmediaSystemTrayWidget w;
-    return a.exec();
+//    app.setActivationWindow(&w);
+//       w.show();
+//       w.raise();
+//       w.activateWindow();
+
+    return app.exec();
 }
 

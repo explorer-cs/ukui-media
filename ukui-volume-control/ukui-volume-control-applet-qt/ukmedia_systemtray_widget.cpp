@@ -75,7 +75,7 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
             this,SLOT(soundPreferenceChangeSystemTrayIcon(int,SystemTrayIconType,bool)));
     //设置中心窗口
     this->setCentralWidget(widget);
-    resize(280,80);
+    resize(300,56);
 }
 
 void UkmediaSystemTrayWidget::iconThemeChanged()
@@ -322,17 +322,17 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputSystemTray = new UkmediaSystemTrayIcon(this);
     widget->outputVolumeNotify();
     //为系统托盘图标添加菜单静音和声音首选项
-    outputActionMute = new QAction(this);
+    outputActionMute = new QAction(tr("Mute(M)"));
     outputActionMute->setCheckable(true);
-    outputActionMute->setText(tr("Mute(M)"));
+//    outputActionMute->setText();
     outputSystemTray->setToolTip(tr("Output volume control"));
     outputActionMute->setObjectName("outputActionMute");
 
-    outputActionSoundPreference = new QAction(this);
-    outputActionSoundPreference->setText(tr("Sound preference(S)"));
-    soundPreference = "application-audio";
-    icon = QIcon::fromTheme(soundPreference);
-    outputActionSoundPreference->setIcon(icon);
+    outputActionSoundPreference = new QAction(QIcon("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/data/img/setting.svg"),tr("Sound preference(S)"));
+//    outputActionSoundPreference->setText(tr("Sound preference(S)"));
+//    soundPreference = "application-audio";
+//    icon = QIcon::fromTheme(soundPreference);
+//    outputActionSoundPreference->setIcon(icon);
 
     //设置右键菜单
     outputMenu = new QMenu(this);
@@ -398,7 +398,6 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
         localWidth = availableWidth - this->width();
         localHeight = availableHeight - this->height();
 
-
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
 
@@ -416,7 +415,6 @@ void UkmediaSystemTrayWidget::activatedinputSystemTrayIcon(QSystemTrayIcon::Acti
 
                 this->setGeometry(localWidth,localHeight,300,56);
             }
-
             this->show();
             break;
         }
@@ -499,7 +497,6 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         int screenNum = desktopWidget->screenCount();
         int primaryScreen = desktopWidget->primaryScreen();
 
-
         connect(desktopWidget,SIGNAL(primaryScreenChanged()),this,SLOT(change()));
 
         totalWidth = desktopWidget->width();
@@ -508,12 +505,10 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
         //totalHeight = QGuiApplication::screens().at(0)->size().height();
         localWidth = availableWidth - this->width();
         localHeight = availableHeight - this->height();
-
-
         if (voiceOnOrOff) {
             if (rect.x() > availableWidth/2 && rect.x()< availableWidth  && rect.y() > availableHeight) {
 
-                this->setGeometry(localWidth,availableHeight-this->height(),300,56);
+                this->setGeometry(localWidth,availableHeight-this->height(),300,56);//下
             }
             else if (rect.x() > availableWidth/2 && rect.x()< availableWidth && rect.y() < 40 ) {
 
@@ -527,7 +522,6 @@ void UkmediaSystemTrayWidget::activatedOutputSystemTrayIcon(QSystemTrayIcon::Act
 
                 this->setGeometry(localWidth,localHeight,300,56);
             }
-//
             showWindow();
             break;
         }
@@ -579,25 +573,24 @@ void UkmediaSystemTrayWidget::hideWindow()
     voiceOnOrOff = 1;
 }
 
-//void UkmediaSystemTrayWidget::mousePressEvent(QMouseEvent *event)
-//{
-//    Q_UNUSED(event);
-//    hideWindow();
-//}
+void UkmediaSystemTrayWidget::mousePressEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event);
+    hideWindow();
+}
 
 /*
     点击窗口之外的部分隐藏
 */
-//bool UkmediaSystemTrayWidget::event(QEvent *event)
-//{
-//    if (event->type() == QEvent::ActivationChange) {
-//        if (QApplication::activeWindow() != this) {
-//            qDebug() << "action change";
-//            hideWindow();
-//        }
-//    }
-//    return QWidget::event(event);
-//}
+bool UkmediaSystemTrayWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::ActivationChange) {
+        if (QApplication::activeWindow() != this) {
+            hideWindow();
+        }
+    }
+    return QWidget::event(event);
+}
 
 /*
     获取托盘图标的滚动事件

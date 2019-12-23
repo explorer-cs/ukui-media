@@ -85,8 +85,8 @@ private:
 
 protected:
     //将窗口设置为随着窗口变化而变化
-//    bool event(QEvent *event);//重写窗口事件
-//    void mousePressEvent(QMouseEvent *event);
+    bool event(QEvent *event);//重写窗口事件
+    void mousePressEvent(QMouseEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
     void keyPressEvent(QKeyEvent *event);
