@@ -393,7 +393,6 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     opMuteCheckBox = new QCheckBox(outputActionMuteWid);
     opMuteCheckBox->setFixedSize(16,16);
     opMuteCheckBox->setFocusPolicy(Qt::NoFocus);
-
     opMuteLabel = new QLabel(tr("Mute(M)"),outputActionMuteWid);
 
     hLayout->addWidget(opMuteCheckBox);

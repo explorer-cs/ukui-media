@@ -14,14 +14,13 @@ int main(int argc, char *argv[])
        qDebug() << "";
        return EXIT_SUCCESS;
     }
+
     //加载qm翻译文件o
     QString locale = QLocale::system().name();
     QTranslator translator;
-//    translator.load("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/translations/ukui-media-volume-control-applet-qt-zh_CN.qm");
-//    a.installTranslator(&translator);
-    //    QString qmFile = QString(TRANSLATIONS_DIR"/%1.qm").arg(locale);
+
     if (locale == "zh_CN") {
-        if (translator.load("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/translations/ukui-volume-control-applet-qt-zh_CN.qm")) {
+        if (translator.load("/usr/share/ukui-media/translations/ukui-volume-control-applet-qt-zh_CN.qm")) {
             app.installTranslator(&translator);
         }
         else {
@@ -39,7 +38,6 @@ int main(int argc, char *argv[])
     qss.close();
 
     UkmediaSystemTrayWidget w;
-
 
 //    QShortcut *shortCut = new QShortcut("F10",&w);
 //    shortCut->setKey(tr("F10"));

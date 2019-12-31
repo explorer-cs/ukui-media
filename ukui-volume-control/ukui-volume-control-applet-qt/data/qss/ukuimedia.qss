@@ -118,5 +118,5 @@ QCheckBox::indicator:unchecked {
 }
 
 QCheckBox::indicator:checked {
-   image:url(:/data/img/勾选.svg);
+   image:url(:/data/img/tick.svg);
 }
