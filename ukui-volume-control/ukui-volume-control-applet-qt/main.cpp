@@ -1,18 +1,20 @@
 #include <QApplication>
 #include <QDebug>
+#include <QShortcut>
 #include <QTranslator>
 #include <QtSingleApplication>
 #include "ukmedia_systemtray_widget.h"
-
+#include <QObject>
 int main(int argc, char *argv[])
 {
 //    QApplication a(argc,argv);
     QtSingleApplication app("ukui-volume-control-applet",argc,argv);
     if (app.isRunning()) {
        app.sendMessage("raise_window_noop");
+       qDebug() << "";
        return EXIT_SUCCESS;
     }
-    //加载qm翻译文件
+    //加载qm翻译文件o
     QString locale = QLocale::system().name();
     QTranslator translator;
 //    translator.load("/home/fzx/fzx/ukui-media/ukui-media/ukui-volume-control/ukui-volume-control-applet-qt/translations/ukui-media-volume-control-applet-qt-zh_CN.qm");
@@ -37,6 +39,13 @@ int main(int argc, char *argv[])
     qss.close();
 
     UkmediaSystemTrayWidget w;
+
+
+//    QShortcut *shortCut = new QShortcut("F10",&w);
+//    shortCut->setKey(tr("F10"));
+//    shortCut->setAutoRepeat(false);
+
+//    connect(shortCut,SIGNAL(activated()),w,SLOT(keyControlVolume()));
 //    app.setActivationWindow(&w);
 //       w.show();
 //       w.raise();

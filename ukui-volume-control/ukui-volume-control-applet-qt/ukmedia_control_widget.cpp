@@ -27,7 +27,7 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
     mateMixerInit();
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
     this->setFixedSize(300,56);
-
+    setWindowOpacity(0.9);
 }
 
 /*
@@ -238,35 +238,33 @@ void UkmediaControlWidget::outputVolumeChanged()
 */
 void UkmediaControlWidget::dockWidgetInit()
 {
-    QFont font("",16,75);
-    const QSize iconSize = QSize(32,32);
+    const QSize iconSize = QSize(24,24);
     m_displayVolumeValue = new QLabel(this);
     m_muteButton = new QPushButton(this);
     m_volumeSlider = new UkmediaSlider(this);
-    QRect *rect=new QRect;
-    rect->setRect(0,0,32,32);
-    m_muteButton->setFixedSize(32,32);
-    m_muteButton->setFlat(true);
-
-    QSpacerItem *space = new QSpacerItem(20,10);
-
+    m_displayVolumeValue->setFrameStyle(QFrame::NoFrame);
+    m_muteButton->setFixedSize(24,24);
+//    m_muteButton->setFlat(true);
+    m_muteButton->setFocusPolicy(Qt::NoFocus);
     m_muteButton->setIconSize(iconSize);
+    m_muteButton->setStyleSheet("QPushButton{background:transparent;border:0px;}");
     m_displayVolumeValue->setObjectName("displayVolumeLabel");
+
 
     m_volumeSlider->setMaximum(100);
     m_volumeSlider->setOrientation(Qt::Horizontal);
-    m_volumeSlider->setFixedSize(178,24);
+    m_volumeSlider->setFixedSize(178,20);
     m_volumeSlider->setSingleStep(10);
 
     //弹出框的控件布局
     QHBoxLayout *hLayout;
     hLayout = new QHBoxLayout();
+
     this->setFixedWidth(300);
-//    hLayout->setSpacing(15);
     hLayout->addWidget(m_muteButton);
     hLayout->addWidget(m_volumeSlider);
-    hLayout->addWidget(m_displayVolumeValue);
     hLayout->setSpacing(10);
+    hLayout->addWidget(m_displayVolumeValue);
 //    this->setContentsMargins(15,10,10,15);
     outputStream = mate_mixer_context_get_default_output_stream(this->ukuiContext);
     outputControl = mate_mixer_stream_get_default_control(outputStream);
@@ -276,6 +274,8 @@ void UkmediaControlWidget::dockWidgetInit()
 
     this->setLayout(hLayout);
     hLayout->setAlignment(this,Qt::AlignCenter);
+
+    hLayout->setContentsMargins(20,12,20,12);
 
     //当滑动条条发生改变时改变音量
     connect(m_volumeSlider,SIGNAL(valueChanged(int)),this,SLOT(volumeSliderChanged(int)));

@@ -10,6 +10,7 @@ TEMPLATE = app
 TARGET = ukui-volume-control-applet-qt
 INCLUDEPATH += .
 
+#include(qxtglobalshortcut5/qxt.pri)
 include(QtSingleApplication/qtsingleapplication.pri)
 # The following define makes your compiler warn you if you use any
 # feature of Qt which has been marked as deprecated (the exact warnings
@@ -41,7 +42,8 @@ PKGCONFIG += \
     gtk+-3.0 \
     glib-2.0 \
     libmatemixer \
-    gsettings-qt
+    gsettings-qt \
+    Qt5Svg
 #    mate-desktop-2.0 \
 #    unique-1.0 \
 #    libcanberra \
@@ -49,12 +51,18 @@ PKGCONFIG += \
 
 HEADERS += \
     ukmedia_control_widget.h \
-    ukmedia_systemtray_widget.h
+    ukmedia_systemtray_widget.h \
+#    ukmediakeybordcontrolwidget.h \
+#    GlobalShortCut/EventFilter.h \
+#    GlobalShortCut/GlobalShortCut.h
 
 SOURCES += \
     ukmedia_control_widget.cpp \
     ukmedia_systemtray_widget.cpp\
-    main.cpp
+    main.cpp \
+#    ukmediakeybordcontrolwidget.cpp \
+#    GlobalShortCut/EventFilter.cpp \
+#    GlobalShortCut/GlobalShortCut.cpp
 
 RESOURCES += \
     res.qrc

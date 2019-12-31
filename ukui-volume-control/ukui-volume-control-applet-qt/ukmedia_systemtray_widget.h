@@ -8,7 +8,10 @@
 #include <QPushButton>
 #include <QWheelEvent>
 #include <QSystemTrayIcon>
+#include <QWidgetAction>
+#include <QCheckBox>
 #include "ukmedia_control_widget.h"
+//#include "ukmediakeybordcontrolwidget.h"
 
 #define TRANSLATIONS_DIR "/home/fzx/fzx/ukui-media/ukui-media/po"
 
@@ -45,6 +48,8 @@ public:
 
     void updateOutputSystemTrayIcon(int volume,bool status);
     void updateInputSystemTrayIcon(int volume,bool status);
+
+    void init_widget_action(QWidget* wid, QString iconstr, QString textstr);
     friend class UkmediaSystemTrayIcon;
 
 Q_SIGNALS:
@@ -68,20 +73,33 @@ public Q_SLOTS:
     void iconThemeChanged();
     void acceptSliderSystemTrayIcon(SystemTrayIconType type);
     void soundPreferenceChangeSystemTrayIcon(int volume,SystemTrayIconType type,bool status);
-
     void change();
+
+    void keyControlVolume();
+    void opMuteCheckBoxReleasedSlot();
+    void ipMuteCheckBoxReleasedSlot();
 private:
     QMenu *inputMenu;
     QMenu *outputMenu ;
     QPushButton *btnVoice;
-    QAction *inputActionMute;
-    QAction *outputActionMute;
+    QWidgetAction *inputActionMute;
+    QWidgetAction *outputActionMute;
+    QWidgetAction *inputActionSoundPreference;
+    QWidgetAction *outputActionSoundPreference;
+
     UkmediaControlWidget *widget;
     QGSettings *iconThemeSettings;
-    QAction *inputActionSoundPreference;
-    QAction *outputActionSoundPreference;
     UkmediaSystemTrayIcon *inputSystemTray;
     UkmediaSystemTrayIcon *outputSystemTray;
+
+    QWidget *inputActionSoundPreferenceWid;
+    QWidget *inputActionMuteWid;
+    QWidget *outputActionSoundPreferenceWid;
+    QWidget *outputActionMuteWid;
+    QCheckBox *ipMuteCheckBox;
+    QLabel *ipMuteLabel;
+    QCheckBox *opMuteCheckBox;
+    QLabel *opMuteLabel;
 
 protected:
     //将窗口设置为随着窗口变化而变化

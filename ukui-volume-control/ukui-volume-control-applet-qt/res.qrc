@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>data/qss/ukuimedia.qss</file>
+        <file>data/img/勾选.png</file>
+        <file>data/img/勾选.svg</file>
+        <file>data/img/setting.svg</file>
     </qresource>
 </RCC>

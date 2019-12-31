@@ -1,14 +1,22 @@
 /*音量描述label*/
-QLabel#displayDescriptionLabel{
-    color: white;
+QLabel{
+    background:transparent;
+    border:0px;
+    color:#ffffff;
+    font-size:14px;
 }
 
 /*音量值label*/
 QLabel#displayVolumeLabel{
-    color: white;
-    font-family: 'Ubuntu';
-    font-size: 16px;
+    color: #ffffff;
+    font-size: 18px;
     font-weight: bold;
+}
+
+QCheckBox
+{
+    spacing: 5px;
+
 }
 
 /*右击菜单*/
@@ -17,40 +25,49 @@ QAction {
 }
 
 /*静音按钮*/
-QPushButton {
-    background-color:rgb(50,50,50);
+QPushButton{
+    background-color: rgba(21,26,30,90%);
 }
+
 
 /*滑动条slider*/
 QSlider::groove:horizontal {
     border: 0px solid #bbb;
+
 }
 QSlider::sub-page:horizontal {
     background: #2e8ad2;
     border-radius: 2px;
-    margin-top:10px;
-    margin-bottom:11px;
+    margin-top:8px;
+    margin-bottom:9px;
 }
 QSlider::add-page:horizontal {
-    background:  rgba(34,70,84,90%);
+    background:  rgba(52,70,80,90%);
     border: 0px solid #777;
     border-radius: 2px;
-    margin-top:10px;
-    margin-bottom:11px;
+    margin-top:8px;
+    margin-bottom:9px;
+}
+QSlider::handle:horizontal {
+    width: 20px;
+    height: 20px;
+    background: rgb(0, 160, 230);
+    border-radius:10px;
 }
 
 /*菜单*/
 QMenu {
     background-color: rgba(8,10,12,90%);
-    margin: 4px 2px;
+    border: 1px solid #626c6e;
+    border-radius: 2px;
+    padding: 4px 2px 4px 2px;
 }
 
 QMenu::item {
     font-size: 14px;
     color: #ffffff;
-    margin: 4px 2px;
-
     height: 34px;
+    width: 244px;
 }
 
 QMenu::item:selected{
@@ -62,6 +79,43 @@ QMenu::item:pressed{
 }
 
 /*弹出窗口*/
-QMainWindow#ukmediaSystemWidget{
+QMainWindow{
+    background-color: rgba(21,26,30,90%);
+    border: 1px solid #626c6e;
+}
+
+QWidget{
+    background-color: rgba(21,26,30,90%);
+}
+
+QWidget#muteWid{
+    background: transparent;
+}
+
+/*
+QWidget#keybordControlWidget{
     background-color: rgba(8,10,12,90%);
+}
+*/
+
+/*托盘图标*/
+QSystemTrayIcon::hover{
+    background-color: rgba(190,216,239,20%);
+}
+
+QSystemTrayIcon::pressed{
+    background-color: rgba(190,216,239,12%);
+}
+
+QCheckBox {
+   width:1px;
+   height:1px;
+}
+
+QCheckBox::indicator:unchecked {
+   image:url(:/data/img/settings.svg);
+}
+
+QCheckBox::indicator:checked {
+   image:url(:/data/img/勾选.svg);
 }
