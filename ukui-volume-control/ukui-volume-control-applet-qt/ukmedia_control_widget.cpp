@@ -247,7 +247,7 @@ void UkmediaControlWidget::dockWidgetInit()
 //    m_muteButton->setFlat(true);
     m_muteButton->setFocusPolicy(Qt::NoFocus);
     m_muteButton->setIconSize(iconSize);
-    m_muteButton->setStyleSheet("QPushButton{background:transparent;border:0px;}");
+    m_muteButton->setStyleSheet("QPushButton{background:transparent;border:0px;padding-left:0px;}");
     m_displayVolumeValue->setObjectName("displayVolumeLabel");
 
 

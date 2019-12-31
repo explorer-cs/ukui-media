@@ -27,6 +27,7 @@ QAction {
 /*静音按钮*/
 QPushButton{
     background-color: rgba(21,26,30,90%);
+    border-left: 0px;
 }
 
 
