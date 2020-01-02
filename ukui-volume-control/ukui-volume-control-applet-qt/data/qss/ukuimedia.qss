@@ -76,7 +76,7 @@ QMenu::item:selected{
 }
 
 QMenu::item:pressed{
-    background-color: rgba(190,216,239,12%);
+    background-color: rgb(190,216,239);
 }
 
 /*弹出窗口*/
@@ -87,17 +87,14 @@ QMainWindow{
 
 QWidget{
     background-color: rgba(21,26,30,90%);
+    border-radius: 2px;
+
 }
 
 QWidget#muteWid{
     background: transparent;
 }
 
-/*
-QWidget#keybordControlWidget{
-    background-color: rgba(8,10,12,90%);
-}
-*/
 
 /*托盘图标*/
 QSystemTrayIcon::hover{
@@ -109,8 +106,8 @@ QSystemTrayIcon::pressed{
 }
 
 QCheckBox {
-   width:1px;
-   height:1px;
+   width:16px;
+   height:16px;
 }
 
 QCheckBox::indicator:unchecked {

@@ -15,7 +15,8 @@ Build-Depends: debhelper (>= 11),
                libmate-desktop-dev (>= 1.18),
                libmatemixer-dev (>= 1.18),
                libxml2-dev,
-               mate-common (>= 1.18)
+               mate-common (>= 1.18),
+	       libqt5svg5-dev
 Standards-Version: 4.1.5
 Homepage: http://www.ukui.org/
 Vcs-Git: https://github.com/ukui/ukui-media.git

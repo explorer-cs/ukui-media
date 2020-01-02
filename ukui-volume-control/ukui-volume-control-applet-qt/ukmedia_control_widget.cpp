@@ -25,7 +25,7 @@ UkmediaControlWidget::UkmediaControlWidget(QWidget *parent) : QWidget (parent)
     inputStream = new MateMixerStream;
 
     mateMixerInit();
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Popup);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);//|Qt::Popup);
     this->setFixedSize(300,56);
     setWindowOpacity(0.9);
 }

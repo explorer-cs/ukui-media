@@ -56,8 +56,6 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
 
     //在构造中设置窗体的MouseTracking属性
     this->setMouseTracking(true);
-//    widget->setMouseTracking(true);
-
     //设置获取焦点事件
     setFocusPolicy(Qt::ClickFocus);
 
@@ -1003,7 +1001,7 @@ void UkmediaSystemTrayWidget::init_widget_action(QWidget *wid, QString iconstr, 
 {
     QString style="QWidget{background:transparent;border:0px;}\
             QWidget:hover{background-color:#34bed8ef;}\
-            QWidget:pressed{background-color:#3abed8ef;}";
+            QWidget:pressed{background-color:#3a123456;}";
 
     QHBoxLayout* layout=new QHBoxLayout(wid);
     wid->setLayout(layout);
@@ -1011,8 +1009,7 @@ void UkmediaSystemTrayWidget::init_widget_action(QWidget *wid, QString iconstr, 
     wid->setStyleSheet(style);
     wid->setFocusPolicy(Qt::NoFocus);
 
-    if(!iconstr.isEmpty())
-    {
+    if(!iconstr.isEmpty()) {
         QLabel* labelicon=new QLabel(wid);
         QSvgRenderer* svg=new QSvgRenderer(wid);
         svg->load(iconstr);
@@ -1025,7 +1022,6 @@ void UkmediaSystemTrayWidget::init_widget_action(QWidget *wid, QString iconstr, 
         labelicon->setAlignment(Qt::AlignCenter);
         labelicon->setStyleSheet("QLabel{background:transparent;border:0px;}");
         layout->addWidget(labelicon);
-
     }
 
     QLabel* labeltext=new QLabel(wid);
@@ -1036,8 +1032,7 @@ void UkmediaSystemTrayWidget::init_widget_action(QWidget *wid, QString iconstr, 
     labeltext->adjustSize();
     layout->addWidget(labeltext);
 
-    if(!iconstr.isEmpty())
-    {
+    if(!iconstr.isEmpty()) {
         layout->setContentsMargins(10,0,wid->width()-16-labeltext->width()-20,0);
         layout->setSpacing(10);
     }
@@ -1068,7 +1063,6 @@ void UkmediaSystemTrayWidget::opMuteCheckBoxReleasedSlot()
         updateOutputSystemTrayIcon(volume,status);
     }
     outputMenu->hide();
-    qDebug() << "volume 值为" << volume;
 }
 
 void UkmediaSystemTrayWidget::ipMuteCheckBoxReleasedSlot()
