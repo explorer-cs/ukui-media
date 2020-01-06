@@ -758,7 +758,7 @@ void UkmediaControlWidget::on_device_profile_active_option_notify (MateMixerDevi
 //        update_device_info (dialog, device);
 }
 
-MateMixerSwitch * UkmediaControlWidget::find_device_profile_switch (MateMixerDevice *device)
+MateMixerSwitch *UkmediaControlWidget::find_device_profile_switch (MateMixerDevice *device)
 {
         const GList *switches;
 
