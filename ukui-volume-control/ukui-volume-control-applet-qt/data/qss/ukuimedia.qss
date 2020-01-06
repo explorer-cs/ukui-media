@@ -111,9 +111,9 @@ QCheckBox {
 }
 
 QCheckBox::indicator:unchecked {
-   image:url(:/data/img/settings.svg);
+   image:url(/usr/share/ukui-media/data/img/settings.svg);
 }
 
 QCheckBox::indicator:checked {
-   image:url(:/data/img/tick.svg);
+   image:url(/usr/share/ukui-media/data/img/tick.svg);
 }
