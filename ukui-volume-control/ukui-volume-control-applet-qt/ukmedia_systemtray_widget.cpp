@@ -83,7 +83,7 @@ UkmediaSystemTrayWidget::UkmediaSystemTrayWidget(QWidget *parent)
     //设置中心窗口
     this->setCentralWidget(widget);
     resize(300,56);
-    setWindowOpacity(0.9);
+    setWindowOpacity(0.95);
 }
 
 void UkmediaSystemTrayWidget::iconThemeChanged()
@@ -358,9 +358,9 @@ void UkmediaSystemTrayWidget::inputSystemTrayMenuInit()
     inputMenu->setObjectName("microphoneMenu");
     inputSystemTray->setContextMenu(inputMenu);
 
-    init_widget_action(inputActionSoundPreferenceWid,":/data/img/setting.svg",tr("Sound preference(S)"));
+    init_widget_action(inputActionSoundPreferenceWid,"/usr/share/ukui-media/data/img/setting.svg",tr("Sound preference(S)"));
     init_widget_action(inputActionMuteWid,"","");
-    inputMenu->setWindowOpacity(0.9);
+    inputMenu->setWindowOpacity(0.95);
     widget->inputVolumeChanged();
 
     //点击静音复选框设置静音模式
@@ -411,12 +411,12 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputMenu->addAction(outputActionSoundPreference);
     outputMenu->setFixedWidth(250);
 
-    init_widget_action(outputActionSoundPreferenceWid,":/data/img/setting.svg",tr("Sound preference(S)"));
+    init_widget_action(outputActionSoundPreferenceWid,"/usr/shrae/ukui-media/data/img/setting.svg",tr("Sound preference(S)"));
     init_widget_action(outputActionMuteWid,"","");
     outputMenu->setObjectName("outputSoundMenu");
     outputSystemTray->setContextMenu(outputMenu);
 
-    outputMenu->setWindowOpacity(0.9);
+    outputMenu->setWindowOpacity(0.95);
     widget->outputVolumeChanged();
 
     //点击静音复选框设置静音模式

@@ -30,7 +30,6 @@ QPushButton{
     border-left: 0px;
 }
 
-
 /*滑动条slider*/
 QSlider::groove:horizontal {
     border: 0px solid #bbb;
