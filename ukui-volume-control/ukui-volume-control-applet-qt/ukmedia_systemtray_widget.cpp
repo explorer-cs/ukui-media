@@ -411,7 +411,7 @@ void UkmediaSystemTrayWidget::outputSystemTrayMenuInit()
     outputMenu->addAction(outputActionSoundPreference);
     outputMenu->setFixedWidth(250);
 
-    init_widget_action(outputActionSoundPreferenceWid,"/usr/shrae/ukui-media/img/setting.svg",tr("Sound preference(S)"));
+    init_widget_action(outputActionSoundPreferenceWid,"/usr/share/ukui-media/img/setting.svg",tr("Sound preference(S)"));
     init_widget_action(outputActionMuteWid,"","");
     outputMenu->setObjectName("outputSoundMenu");
     outputSystemTray->setContextMenu(outputMenu);
