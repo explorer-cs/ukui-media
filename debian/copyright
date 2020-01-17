@@ -3,6 +3,22 @@ Upstream-Name: ukui-media
 Upstream-Contact: Hao Lee <lihao@kylinos.cn>
 Source: http://github.com/ukui/ukui-media/
 
+Files: ukui-volume-control/ukui-volume-control-applet-qt/main.cpp
+       ukui-volume-control/ukui-volume-control-applet-qt/ukmedia_control_widget.cpp
+       ukui-volume-control/ukui-volume-control-applet-qt/ukmedia_control_widget.h
+       ukui-volume-control/ukui-volume-control-applet-qt/ukmedia_systemtray_widget.cpp
+       ukui-volume-control/ukui-volume-control-applet-qt/ukmedia_systemtray_widget.h
+       ukui-volume-control/ukui-volume-control-applet-qt/ukui-volume-control-applet-qt.pro
+       ukui-volume-control/ukui-volume-control-applet-qt/res.qrc
+       ukui-volume-control/ukui-volume-control-applet-qt/data/*
+       ukui-volume-control/ukui-volume-control-applet-qt/translations/*
+Copyright: 2020, Tianjin KYLIN Information Technology Co., Ltd.
+License: GPL-2+
+
+Files: ukui-volume-control/ukui-volume-control-applet-qt/QtSingleApplication/*
+Copyright:2013 Digia Plc and/or its subsidiary(-ies).
+License: GPL-2+
+
 Files: ukui-volume-control/gvc-balance-bar.h
        ukui-volume-control/gvc-channel-bar.h
        ukui-volume-control/gvc-combo-box.h
